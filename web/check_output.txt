@@ -1,0 +1,7 @@
+
+> web@0.0.1 check
+> svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: /home/ashish/Desktop/codecrafters/craftcode/web
+Getting Svelte diagnostics...
+

@@ -1,0 +1,148 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+
+  // Custom fields
+  password        String? // Made optional for OAuth users
+  polarCustomerId String?
+  isCreator       Boolean  @default(false)
+
+  challenges Challenge[]
+  progress   UserProgress[]
+  cliTokens  CliToken[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+model Challenge {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  difficulty  String   // "beginner" | "intermediate" | "advanced"
+  iconUrl     String?
+  coverUrl    String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  stages Stage[]
+
+  @@index([authorId])
+  @@index([isPublished])
+}
+
+model Stage {
+  id             String   @id @default(cuid())
+  order          Int
+  title          String
+  instructionsMd String   @db.Text
+  testScriptUrl  String?  // URL to bash test script (can be null during creation)
+  testScript     String?  @db.Text // Inline script storage alternative
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  progress UserProgress[]
+
+  @@unique([challengeId, order])
+  @@index([challengeId])
+}
+
+model UserProgress {
+  id          String   @id @default(cuid())
+  completedAt DateTime @default(now())
+
+  userId  String
+  stageId String
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stage   Stage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stageId])
+  @@index([userId])
+  @@index([stageId])
+}
+
+model CliToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  name      String?  // e.g., "MacBook Pro", "Work Laptop"
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  lastUsed  DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
