@@ -30,13 +30,13 @@ export const actions: Actions = {
     let slug = slugify(title);
     
     // Check if slug exists and make unique
-    const existing = await db.challenge.findUnique({ where: { slug } });
+    const existing = await db.course.findUnique({ where: { slug } });
     if (existing) {
       slug = `${slug}-${Date.now().toString(36)}`;
     }
 
     // Create challenge
-    const challenge = await db.challenge.create({
+    const challenge = await db.course.create({
       data: {
         title,
         slug,

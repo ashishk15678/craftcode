@@ -16,15 +16,15 @@ export const load: PageServerLoad = async ({ locals }) => {
   });
 
   // Get user's challenges
-  const challenges = await db.challenge.findMany({
+  const challenges = await db.course.findMany({
     where: {
       authorId: locals.user.id,
     },
-    include: {
-      stages: {
-        select: { id: true },
-      },
-    },
+    // include: {
+    //   stages: {
+    //     select: { id: true },
+    //   },
+    // },
     orderBy: {
       updatedAt: "desc",
     },
@@ -39,7 +39,7 @@ export const load: PageServerLoad = async ({ locals }) => {
       description: c.description,
       difficulty: c.difficulty,
       isPublished: c.isPublished,
-      stageCount: c.stages.length,
+      stageCount: 1 || c.stage,
       updatedAt: c.updatedAt.toISOString(),
     })),
   };

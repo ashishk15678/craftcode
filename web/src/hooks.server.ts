@@ -7,6 +7,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   const session = await auth.api.getSession({
     headers: event.request.headers,
   });
+  // @ts-ignore
   event.locals.user = session?.user || null;
 
   return svelteKitHandler({ event, resolve, auth, building });

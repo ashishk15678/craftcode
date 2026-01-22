@@ -1,57 +1,66 @@
-import type { PageServerLoad } from './$types';
-import { db } from '$lib/server/db';
+import type { PageServerLoad } from "./$types";
+import { db } from "$lib/server/db";
 
 export const load: PageServerLoad = async ({ locals }) => {
-  const challenges = await db.challenge.findMany({
+  const challenges = await db.course.findMany({
     where: {
-      isPublished: true
+      isPublished: true,
     },
     include: {
       author: {
         select: {
           id: true,
-          name: true
-        }
+          name: true,
+        },
       },
-      stages: {
+      lessons: {
         select: {
-          id: true
-        }
+          id: true,
+        },
       },
-      ...(locals.user ? {
-        stages: {
-          select: {
-            id: true,
-            progress: {
-              where: {
-                userId: locals.user.id
-              },
+      ...(locals.user
+        ? {
+            lessons: {
               select: {
-                id: true
-              }
-            }
+                id: true,
+                progress: {
+                  where: {
+                    userId: locals.user.id,
+                  },
+                  select: {
+                    id: true,
+                  },
+                },
+              },
+            },
           }
-        }
-      } : {})
+        : {}),
     },
     orderBy: {
-      createdAt: 'desc'
-    }
+      createdAt: "desc",
+    },
   });
 
   return {
-    challenges: challenges.map(challenge => ({
+    challenges: challenges.map((challenge) => ({
       id: challenge.id,
       title: challenge.title,
       slug: challenge.slug,
       description: challenge.description,
-      difficulty: challenge.difficulty as 'beginner' | 'intermediate' | 'advanced',
+      difficulty: challenge.difficulty as
+        | "beginner"
+        | "intermediate"
+        | "advanced",
       iconUrl: challenge.iconUrl,
       authorName: challenge.author.name,
-      stageCount: challenge.stages.length,
-      completedStages: locals.user
-        ? challenge.stages.filter(s => 'progress' in s && s.progress.length > 0).length
-        : 0
-    }))
+      stageCount: challenge.stages,
+      completedStages: [],
+      //   completedStages: locals.user
+      //     ? challenge.stages.filter(
+      //         (s) => "progress" in s && s.progress.length > 0,
+      //       ).length
+      //     : 0,
+    })),
+    //
   };
 };

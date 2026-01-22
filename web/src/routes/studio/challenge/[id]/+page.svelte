@@ -35,7 +35,7 @@
 <div class="h-screen flex flex-col bg-background">
     <!-- Header -->
     <header
-        class="border-b border-border bg-card px-4 py-3 flex items-center justify-between flex-shrink-0"
+        class="border-b border-border bg-card px-4 py-2 flex items-center justify-between shrink-0"
     >
         <div class="flex items-center gap-4">
             <a
@@ -61,12 +61,7 @@
                     {data.challenge.title}
                 </h1>
                 <div class="flex items-center gap-2 mt-0.5">
-                    <Badge
-                        variant={data.challenge.isPublished
-                            ? "default"
-                            : "intermediate"}
-                        size="sm"
-                    >
+                    <Badge variant={"default"} size="sm" className="text-xs">
                         {data.challenge.isPublished ? "Published" : "Draft"}
                     </Badge>
                     <span class="text-xs text-muted-foreground capitalize"
@@ -79,7 +74,10 @@
         <div class="flex items-center gap-3">
             {#if data.challenge.isPublished}
                 <form method="POST" action="?/unpublish" use:enhance>
-                    <button type="submit" class="btn-secondary text-sm">
+                    <button
+                        type="submit"
+                        class="bg-secondary px-2 py-1 rounded-full text-muted-foreground text-xs border border-border hover:text-primary"
+                    >
                         Unpublish
                     </button>
                 </form>
@@ -87,9 +85,9 @@
                 <form method="POST" action="?/publish" use:enhance>
                     <button
                         type="submit"
-                        disabled={true || data.isCreator}
-                        class="btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        title={true || data.isCreator
+                        disabled={!data.isCreator}
+                        class="btn-primary text-sm"
+                        title={!data.isCreator
                             ? "Creator subscription required"
                             : ""}
                     >
@@ -263,35 +261,109 @@
 
                 <!-- Test script section -->
                 <div class="border-t border-border bg-card p-4 flex-shrink-0">
-                    <details>
-                        <summary
-                            class="cursor-pointer font-medium text-foreground mb-2"
+                <h3 class="font-medium text-foreground mb-4">Test Script (Bash)</h3>
+                
+                <div class="mb-4 flex gap-2 overflow-x-auto pb-2">
+                    <button 
+                        type="button" 
+                        class="btn-secondary text-xs whitespace-nowrap"
+                        onclick={() => {
+                            const template = `#!/bin/bash
+# Check if a file exists
+if [ ! -f "main.c" ]; then
+    echo "Error: main.c not found"
+    exit 1
+fi
+echo "main.c found"`;
+                            const textarea = document.querySelector('textarea[name="testScript"]') as HTMLTextAreaElement | null;
+                            if (textarea) {
+                                textarea.value = template;
+                                textarea.dispatchEvent(new Event('input'));
+                            }
+                        }}
+                    >
+                        Template: File Exists
+                    </button>
+                    <button 
+                        type="button" 
+                        class="btn-secondary text-xs whitespace-nowrap"
+                        onclick={() => {
+                            const template = `#!/bin/bash
+# Compile and run
+gcc main.c -o main
+if [ $? -ne 0 ]; then
+    echo "Compilation failed"
+    exit 1
+fi
+
+output=$(./main)
+expected="Hello World"
+
+if [ "$output" != "$expected" ]; then
+    echo "Expected '$expected', got '$output'"
+    exit 1
+fi
+echo "Test passed"`;
+                            const textarea = document.querySelector('textarea[name="testScript"]') as HTMLTextAreaElement | null;
+                            if (textarea) {
+                                textarea.value = template;
+                                textarea.dispatchEvent(new Event('input'));
+                            }
+                        }}
+                    >
+                        Template: Compile & Run
+                    </button>
+                    <button 
+                        type="button" 
+                        class="btn-secondary text-xs whitespace-nowrap"
+                        onclick={() => {
+                            const template = `#!/bin/bash
+# Python Script Check
+if ! python3 -c "import main" 2>/dev/null; then
+   echo "Failed to import main.py"
+   exit 1
+fi
+echo "Module valid"`;
+                            const textarea = document.querySelector('textarea[name="testScript"]') as HTMLTextAreaElement | null;
+                            if (textarea) {
+                                textarea.value = template;
+                                textarea.dispatchEvent(new Event('input'));
+                            }
+                        }}
+                    >
+                        Template: Python Check
+                    </button>
+                </div>
+
+                <form method="POST" action="?/updateStage" use:enhance>
+                    <input
+                        type="hidden"
+                        name="stageId"
+                        value={selectedStage.id}
+                    />
+                    <textarea
+                        name="testScript"
+                        rows="12"
+                        class="w-full input-field font-mono text-sm resize-none mb-2"
+                        placeholder="#!/bin/bash&#10;# Test script for this stage..."
+                        value={selectedStage.testScript || ""}
+                        oninput={(e) => {
+                           // Update the bound value manually if needed or rely on form
+                        }}
+                    ></textarea>
+                    
+                    <div class="flex justify-between items-center">
+                        <p class="text-xs text-muted-foreground">
+                            This script will run on the user's machine.
+                        </p>
+                        <button
+                            type="submit"
+                            class="btn-secondary text-sm"
                         >
-                            Test Script
-                        </summary>
-                        <form method="POST" action="?/updateStage" use:enhance>
-                            <input
-                                type="hidden"
-                                name="stageId"
-                                value={selectedStage.id}
-                            />
-                            <textarea
-                                name="testScript"
-                                rows="6"
-                                class="w-full input-field font-mono text-sm resize-none"
-                                placeholder="#!/bin/bash&#10;# Test script for this stage..."
-                                >{selectedStage.testScript || ""}</textarea
-                            >
-                            <div class="mt-2 flex justify-end">
-                                <button
-                                    type="submit"
-                                    class="btn-secondary text-sm"
-                                >
-                                    Save Test Script
-                                </button>
-                            </div>
-                        </form>
-                    </details>
+                            Save Test Script
+                        </button>
+                    </div>
+                </form>
                 </div>
             </div>
         {:else}

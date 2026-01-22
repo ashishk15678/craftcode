@@ -84,7 +84,7 @@
                     <button
                         class="px-4 py-1 rounded-xl text-sm font-medium transition-colors
               {selectedDifficulty === null
-                            ? 'bg-primary text-primary-foreground'
+                            ? 'text-primary border border-border shadow-xl'
                             : 'bg-secondary text-muted-foreground hover:text-foreground'}"
                         onclick={() => (selectedDifficulty = null)}
                     >
@@ -94,7 +94,7 @@
                         <button
                             class="px-4 py-1 rounded-xl text-sm font-medium capitalize transition-colors
                 {selectedDifficulty === difficulty
-                                ? 'bg-primary text-primary-foreground'
+                                ? ' text-primary border border-border shadow-xl'
                                 : 'bg-secondary text-muted-foreground hover:text-foreground'}"
                             onclick={() => (selectedDifficulty = difficulty)}
                         >

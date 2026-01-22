@@ -1,8 +1,8 @@
 <script lang="ts">
     import "../app.css";
     import Header from "$lib/components/Header.svelte";
-    import { theme } from "$lib/stores/theme";
     import type { LayoutData } from "./$types";
+    import { asset, assets } from "$app/paths";
 
     let { data, children } = $props<{ data: LayoutData; children: any }>();
 </script>
@@ -14,16 +14,20 @@
         {@render children()}
     </main>
 
-    <footer class="border-t border-border bg-card mt-20">
+    <footer class="border-t rounded-t-4xl border-border bg-card mt-20">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- Brand -->
                 <div class="md:col-span-2">
                     <div class="flex items-center gap-2 mb-4">
                         <div
                             class="w-8 h-8 rounded-lg flex items-center justify-center"
                         >
-                            <img src="/favicon.png" width={18} height={18} />
+                            <img
+                                src={asset("/favicon.png")}
+                                alt="Logo"
+                                width={18}
+                                height={18}
+                            />
                         </div>
                         <span class="font-bold text-lg text-foreground"
                             >CraftCode</span
@@ -36,7 +40,6 @@
                     </p>
                 </div>
 
-                <!-- Links -->
                 <div>
                     <h4 class="font-semibold text-foreground mb-4">Product</h4>
                     <ul class="space-y-2 text-sm text-muted-foreground">

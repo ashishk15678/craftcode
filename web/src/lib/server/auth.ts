@@ -104,3 +104,6 @@ export const auth = betterAuth({
     }),
   ],
 });
+
+// Re-export CLI token functions
+export { verifyCliToken, generateCliToken } from "./cli-auth";

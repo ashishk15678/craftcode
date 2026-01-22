@@ -3,9 +3,24 @@
 
 @layer base {
     .input-field {
-        @apply px-3 py-1 rounded-xl ring ring-border;
+        @apply px-3 py-0.5 rounded-2xl ring ring-border;
     }
 }
+
+.animate-shake {
+    animation: shake 0.5s ease-in-out infinite;
+}
+
+@keyframes shake {
+    0%,
+    100% {
+        transform: "rotate(-20deg)";
+    }
+    50% {
+        transform: "rotate(20deg)";
+    }
+}
+
 :root {
     /* Default Light Theme */
     --background: oklch(1 0 0);

@@ -17,39 +17,40 @@ export const POST: RequestHandler = async ({ request }) => {
   }
 
   const body = await request.json().catch(() => ({}));
-  const stageId = body.stageId;
+  // Accept both 'lessonId' and 'stageId' for backward compatibility
+  const lessonId = body.lessonId || body.stageId;
 
-  if (!stageId) {
-    return json({ error: 'stageId is required' }, { status: 400 });
+  if (!lessonId) {
+    return json({ error: 'lessonId or stageId is required' }, { status: 400 });
   }
 
-  // Verify stage exists
-  const stage = await db.stage.findUnique({
-    where: { id: stageId },
+  // Verify lesson exists
+  const lesson = await db.lesson.findUnique({
+    where: { id: lessonId },
     include: {
-      challenge: {
+      course: {
         select: { id: true, title: true, slug: true }
       }
     }
   });
 
-  if (!stage) {
-    return json({ error: 'Stage not found' }, { status: 404 });
+  if (!lesson) {
+    return json({ error: 'Lesson not found' }, { status: 404 });
   }
 
   // Check if already completed
   const existing = await db.userProgress.findUnique({
     where: {
-      userId_stageId: {
+      userId_lessonId: {
         userId: user.id,
-        stageId
+        lessonId
       }
     }
   });
 
   if (existing) {
     return json({
-      message: 'Stage already completed',
+      message: 'Lesson already completed',
       alreadyCompleted: true
     });
   }
@@ -58,41 +59,41 @@ export const POST: RequestHandler = async ({ request }) => {
   await db.userProgress.create({
     data: {
       userId: user.id,
-      stageId
+      lessonId
     }
   });
 
-  // Check if this was the last stage
-  const nextStage = await db.stage.findFirst({
+  // Check if this was the last lesson
+  const nextLesson = await db.lesson.findFirst({
     where: {
-      challengeId: stage.challenge.id,
-      order: stage.order + 1
+      courseId: lesson.course.id,
+      order: lesson.order + 1
     }
   });
 
-  const totalStages = await db.stage.count({
-    where: { challengeId: stage.challenge.id }
+  const totalLessons = await db.lesson.count({
+    where: { courseId: lesson.course.id }
   });
 
-  const completedStages = await db.userProgress.count({
+  const completedLessons = await db.userProgress.count({
     where: {
       userId: user.id,
-      stage: { challengeId: stage.challenge.id }
+      lesson: { courseId: lesson.course.id }
     }
   });
 
   return json({
     success: true,
-    message: `Stage ${stage.order} completed!`,
+    message: `Lesson ${lesson.order} completed!`,
     progress: {
-      completed: completedStages,
-      total: totalStages
+      completed: completedLessons,
+      total: totalLessons
     },
-    challengeComplete: !nextStage,
-    nextStage: nextStage ? {
-      id: nextStage.id,
-      order: nextStage.order,
-      title: nextStage.title
+    courseComplete: !nextLesson,
+    nextLesson: nextLesson ? {
+      id: nextLesson.id,
+      order: nextLesson.order,
+      title: nextLesson.title
     } : null
   });
 };

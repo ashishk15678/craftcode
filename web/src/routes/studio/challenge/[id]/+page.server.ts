@@ -7,10 +7,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     throw redirect(303, "/auth/login");
   }
 
-  const challenge = await db.challenge.findUnique({
+  const challenge = await db.course.findUnique({
     where: { id: params.id },
     include: {
-      stages: {
+      lessons: {
         orderBy: { order: "asc" },
       },
     },
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     throw error(403, "Not authorized");
   }
 
-  const creatorStatus = true || (await checkCreatorStatus(locals.user.id));
+  const creatorStatus = locals.user.isCreator;
 
   return {
     challenge: {
@@ -35,7 +35,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       difficulty: challenge.difficulty,
       isPublished: challenge.isPublished,
     },
-    stages: challenge.stages.map((s) => ({
+    stages: challenge.lessons.map((s: any) => ({
       id: s.id,
       order: s.order,
       title: s.title,
@@ -43,7 +43,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       testScriptUrl: s.testScriptUrl,
       testScript: s.testScript,
     })),
-    isCreator: true || creatorStatus.isCreator,
+    isCreator: creatorStatus,
   };
 };
 
@@ -60,7 +60,7 @@ export const actions: Actions = {
       return fail(400, { error: "All fields are required" });
     }
 
-    await db.challenge.update({
+    await db.course.update({
       where: { id: params.id },
       data: { title, description, difficulty },
     });
@@ -71,13 +71,13 @@ export const actions: Actions = {
   addStage: async ({ params, locals }) => {
     if (!locals.user) throw redirect(303, "/auth/login");
 
-    const stageCount = await db.stage.count({
-      where: { challengeId: params.id },
+    const stageCount = await db.lesson.count({
+      where: { courseId: params.id },
     });
 
-    await db.stage.create({
+    await db.lesson.create({
       data: {
-        challengeId: params.id,
+        courseId: params.id,
         order: stageCount + 1,
         title: `Stage ${stageCount + 1}`,
         instructionsMd: "# Instructions\n\nAdd your stage instructions here...",
@@ -100,7 +100,7 @@ export const actions: Actions = {
       return fail(400, { error: "Stage ID required" });
     }
 
-    await db.stage.update({
+    await db.lesson.update({
       where: { id: stageId },
       data: {
         title: title || undefined,
@@ -122,7 +122,7 @@ export const actions: Actions = {
       return fail(400, { error: "Stage ID required" });
     }
 
-    await db.stage.delete({ where: { id: stageId } });
+    await db.lesson.delete({ where: { id: stageId } });
 
     return { success: true };
   },
@@ -130,13 +130,13 @@ export const actions: Actions = {
   publish: async ({ params, locals }) => {
     if (!locals.user) throw redirect(303, "/auth/login");
 
-    const creatorStatus = true || (await checkCreatorStatus(locals.user.id));
+    const creatorStatus = locals.user.isCreator;
 
-    if (!creatorStatus.isCreator) {
+    if (!creatorStatus) {
       return fail(403, { error: "Creator subscription required to publish" });
     }
 
-    await db.challenge.update({
+    await db.course.update({
       where: { id: params.id },
       data: { isPublished: true },
     });
@@ -147,7 +147,7 @@ export const actions: Actions = {
   unpublish: async ({ params, locals }) => {
     if (!locals.user) throw redirect(303, "/auth/login");
 
-    await db.challenge.update({
+    await db.course.update({
       where: { id: params.id },
       data: { isPublished: false },
     });

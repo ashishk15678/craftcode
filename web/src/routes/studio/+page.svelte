@@ -23,9 +23,7 @@
                 class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
             >
                 <div>
-                    <h1
-                        class="text-3xl sm:text-4xl font-bold text-foreground mb-2"
-                    >
+                    <h1 class="text-2xl sm:text-2xl font-bold text-foreground">
                         Creator Studio
                     </h1>
                     <p class="text-muted-foreground">
@@ -34,17 +32,13 @@
                 </div>
 
                 <div class="flex items-center gap-4">
-                    {#if !data.isCreator}
-                        <a href="/studio/subscribe" class="btn-primary">
-                            Upgrade to Creator
-                        </a>
-                    {:else}
+                    {#if data.isCreator}
                         <button
                             onclick={() => (showNewChallengeModal = true)}
-                            class="btn-primary"
+                            class="bg-linear-to-b from-primary/80 via-primary/80 to-primary text-secondary px-6 py-1 rounded-full text-sm shadow-xl flex items-center justify-center outline-2 outline-offset-4 outline-border"
                         >
                             <svg
-                                class="w-5 h-5 mr-2 inline"
+                                class="w-4 h-4 mr-2 inline"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -64,38 +58,52 @@
 
             {#if !data.isCreator}
                 <!-- Upgrade prompt -->
-                <GlowCard className="mb-8">
-                    <div class="p-8 text-center">
-                        <div
-                            class="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center mx-auto mb-6"
-                        >
-                            <svg
-                                class="w-8 h-8 text-primary"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                <div class="bg-background p-2 border border-border rounded-2xl">
+                    <GlowCard
+                        className=" w-full flex items-center justify-center bg-secondary"
+                    >
+                        <div class="p-2 md:p-8 text-center max-w-sm">
+                            <div
+                                class="flex flex-row items-center justify-center w-full"
                             >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                                />
-                            </svg>
+                                <div
+                                    class="w-8 h-8 md:w-16 md:h-16 rounded-2xl flex items-center justify-center animate-shake"
+                                >
+                                    <svg
+                                        class="w-4 h-4 md:w-8 md:h-8 text-primary"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                        />
+                                    </svg>
+                                </div>
+                                <h2 class="text-md md:text-3xl text-foreground">
+                                    Become a Creator
+                                </h2>
+                            </div>
+                            <p
+                                class="text-muted-foreground max-w-md mx-auto mb-6"
+                            >
+                                Subscribe for just $5/month to create and
+                                publish your own coding challenges. Share your
+                                knowledge with developers worldwide.
+                            </p>
+                            <a href="/studio/subscribe" class="btn-primary">
+                                <button
+                                    class=" w-full py-1 text-sm md:text-lg rounded-xl md:rounded-2xl bg-linear-to-b hover:from-primary/70 from-primary/50 hover:via-primary/70 via-primary/90 duration-500 transition-colors to-primary text-secondary"
+                                >
+                                    Subscribe Now - $2/month
+                                </button>
+                            </a>
                         </div>
-                        <h2 class="text-2xl font-bold text-foreground mb-3">
-                            Become a Creator
-                        </h2>
-                        <p class="text-muted-foreground max-w-md mx-auto mb-6">
-                            Subscribe for just $2/month to create and publish
-                            your own coding challenges. Share your knowledge
-                            with developers worldwide.
-                        </p>
-                        <a href="/studio/subscribe" class="btn-primary">
-                            Subscribe Now - $2/month
-                        </a>
-                    </div>
-                </GlowCard>
+                    </GlowCard>
+                </div>
             {/if}
 
             <!-- Challenges Grid -->
@@ -111,7 +119,7 @@
                             <GlowCard className="h-full">
                                 <div class="p-6">
                                     <div
-                                        class="flex items-start justify-between mb-4"
+                                        class="flex items-start justify-between"
                                     >
                                         <h3
                                             class="font-semibold text-lg text-foreground group-hover:text-primary transition-colors"
@@ -137,7 +145,7 @@
                                     </p>
 
                                     <div
-                                        class="flex items-center justify-between text-sm text-muted-foreground"
+                                        class="flex items-center justify-between text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-xl"
                                     >
                                         <span
                                             >{challenge.stageCount} stages</span
@@ -154,10 +162,14 @@
                     {/each}
                 </div>
             {:else if data.isCreator}
-                <GlowCard>
-                    <div class="p-12 text-center">
+                <GlowCard
+                    className="w-full flex items-center justify-center py-1 bg-secondary"
+                >
+                    <div
+                        class="p-12 max-w-md px-12 bg-card border border-border rounded-2xl"
+                    >
                         <div
-                            class="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4"
+                            class="w-11 h-11 border border-border rounded-full bg-secondary flex items-center justify-center mx-auto mb-4"
                         >
                             <svg
                                 class="w-8 h-8 text-muted-foreground"
@@ -173,15 +185,16 @@
                                 />
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-foreground mb-2">
+                        <h3 class="text-xl font-semibold text-foreground">
                             Create your first challenge
                         </h3>
                         <p class="text-muted-foreground mb-6">
-                            Get started by creating a new coding challenge
+                            Get started by creating a new coding challenge. New
+                            challenges with new levels.
                         </p>
                         <button
                             onclick={() => (showNewChallengeModal = true)}
-                            class="btn-primary"
+                            class="bg-linear-to-b from-primary/80 w-full via-primary/80 hover:via-primary/80 transition-colors duration-200 to-primary text-secondary px-6 py-1 rounded-3xl"
                         >
                             Create Challenge
                         </button>
@@ -200,81 +213,90 @@
             onclick={() => (showNewChallengeModal = false)}
             aria-label="Close modal"
         />
-        <div
-            class="relative bg-card border border-border rounded-xl p-6 w-full max-w-md"
         >
-            <h2 class="text-xl font-semibold text-foreground mb-4">
-                Create New Challenge
-            </h2>
-
-            <form
-                action="/studio/challenge/new"
-                method="POST"
-                class="space-y-4"
+        <div class="p-2 bg-secondary rounded-xl relative border border-border">
+            <div
+                class="relative bg-card rounded-xl p-6 w-full max-w-sm border border-border"
             >
-                <div>
-                    <label
-                        for="title"
-                        class="block text-sm font-medium text-foreground mb-2"
-                        >Title</label
-                    >
-                    <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        required
-                        class="input-field"
-                        placeholder="Build Your Own Redis"
-                    />
-                </div>
+                <h2 class="text-lg font-semibold text-foreground">
+                    Create New Challenge
+                </h2>
+                <p class="text-muted-foreground text-sm">
+                    You can use this modal to create new challenges
+                </p>
 
-                <div>
-                    <label
-                        for="description"
-                        class="block text-sm font-medium text-foreground mb-2"
-                        >Description</label
-                    >
-                    <textarea
-                        id="description"
-                        name="description"
-                        required
-                        rows="3"
-                        class="input-field resize-none"
-                        placeholder="A brief description of the challenge..."
-                    ></textarea>
-                </div>
+                <form
+                    action="/studio/challenge/new"
+                    method="POST"
+                    class="space-y-4 mt-6"
+                >
+                    <div class="py-1">
+                        <label
+                            for="title"
+                            class="block text-sm font-medium text-muted-foreground"
+                            >Title</label
+                        >
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            required
+                            class="rounded-md border border-border px-2 w-full py-1"
+                            placeholder="Build Your Own Redis"
+                        />
+                    </div>
 
-                <div>
-                    <label
-                        for="difficulty"
-                        class="block text-sm font-medium text-foreground mb-2"
-                        >Difficulty</label
-                    >
-                    <select
-                        id="difficulty"
-                        name="difficulty"
-                        required
-                        class="input-field"
-                    >
-                        <option value="beginner">Beginner</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advanced</option>
-                    </select>
-                </div>
+                    <div class="py-1">
+                        <label
+                            for="description"
+                            class="block text-sm font-medium text-muted-foreground"
+                            >Description</label
+                        >
+                        <textarea
+                            id="description"
+                            name="description"
+                            required
+                            rows="3"
+                            class="rounded-md border border-border px-2 w-full resize-none"
+                            placeholder="A brief description of the challenge..."
+                        ></textarea>
+                    </div>
 
-                <div class="flex gap-3 pt-4">
-                    <button
-                        type="button"
-                        onclick={() => (showNewChallengeModal = false)}
-                        class="flex-1 btn-secondary"
-                    >
-                        Cancel
-                    </button>
-                    <button type="submit" class="flex-1 btn-primary">
-                        Create
-                    </button>
-                </div>
-            </form>
+                    <div>
+                        <label
+                            for="difficulty"
+                            class="block text-sm font-medium text-muted-foreground mb-1"
+                            >Difficulty</label
+                        >
+                        <select
+                            id="difficulty"
+                            name="difficulty"
+                            required
+                            class="input-field rounded-md placeholder:text-muted-foreground w-full text-center py-1"
+                        >
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button
+                            type="button"
+                            onclick={() => (showNewChallengeModal = false)}
+                            class="flex-1 bg-secondary py-1 rounded-xl"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            class="flex-1 bg-linear-to-b from-primary/70 via-primary/70 to-primary text-secondary rounded-xl"
+                        >
+                            Create
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 {/if}

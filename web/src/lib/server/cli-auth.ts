@@ -32,7 +32,7 @@ export async function generateCliToken(
  */
 export async function verifyCliToken(
   token: string,
-): Promise<Omit<User, "passwordHash"> | null> {
+): Promise<User | null> {
   const cliToken = await db.cliToken.findUnique({
     where: { token },
     include: { user: true },
@@ -48,7 +48,5 @@ export async function verifyCliToken(
     data: { lastUsed: new Date() },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { passwordHash: _, ...userWithoutPassword } = cliToken.user;
-  return userWithoutPassword; // Note: type mismatch if passwordHash removed from User, checks schema
+  return cliToken.user;
 }

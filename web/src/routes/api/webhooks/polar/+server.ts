@@ -1,6 +1,5 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { handlePolarWebhook } from '$lib/server/polar';
 import crypto from 'crypto';
 
 const POLAR_WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
@@ -38,7 +37,8 @@ export const POST: RequestHandler = async ({ request }) => {
     
     console.log('Polar webhook received:', event.type);
     
-    await handlePolarWebhook(event);
+    // Webhook handling is done in auth.ts via Better Auth Polar plugin
+    // This endpoint just validates and logs the webhook
 
     return json({ received: true });
   } catch (error) {
