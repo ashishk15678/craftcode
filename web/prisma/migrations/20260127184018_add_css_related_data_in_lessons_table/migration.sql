@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Lesson" ADD COLUMN     "canvasHeight" INTEGER NOT NULL DEFAULT 300,
+ADD COLUMN     "canvasWidth" INTEGER NOT NULL DEFAULT 400,
+ADD COLUMN     "matchThreshold" DOUBLE PRECISION NOT NULL DEFAULT 95.0,
+ADD COLUMN     "targetImageUrl" TEXT;

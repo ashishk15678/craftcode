@@ -4,70 +4,111 @@
     import StatCard from "$lib/components/profile/StatCard.svelte";
     import AchievementBadge from "$lib/components/profile/AchievementBadge.svelte";
     import CourseCard from "$lib/components/profile/CourseCard.svelte";
+    import { HugeiconsIcon } from "@hugeicons/svelte";
+    import {
+        UserStoryIcon,
+        TickDouble01Icon,
+        CourseIcon,
+        StudentsIcon,
+        FireIcon,
+        ChartRingIcon,
+        MoneyIcon,
+        Trophy,
+        StarIcon,
+        Chart01Icon,
+    } from "@hugeicons/core-free-icons";
 
     export let data: PageData;
 
-    const { user, statistics, completedCourses, achievements, creatorStats } = data;
+    const { user, statistics, completedCourses, achievements, creatorStats } =
+        data;
 </script>
 
-<div class="profile-container">
+<div class="profile-container text-primary">
     <!-- Profile Header -->
-    <div class="profile-header">
-        <div class="user-avatar">
+    <div class="flex w-full justify-between items-center">
+        <div class=" flex">
             {#if user.image}
-                <img src={user.image} alt={user.name || "User"} />
+                <img
+                    src={user.image}
+                    class="w-18 h-18 rounded-full"
+                    alt={user.name || "User"}
+                />
             {:else}
-                <div class="avatar-placeholder">
-                    {(user.name || user.email || "U").charAt(0).toUpperCase()}
+                <div
+                    class="w-15 h-15 rounded-full bg-secondary flex items-center justify-center font-bold"
+                >
+                    <HugeiconsIcon
+                        icon={UserStoryIcon}
+                        class="h-10 w-10 text-muted-foreground"
+                    />
                 </div>
             {/if}
+            <div class="flex flex-col ml-4">
+                <div class="flex">
+                    <h1 class="text-xl font-bold">
+                        {user.name || "Anonymous"}
+                    </h1>
+
+                    {#if user.isCreator}
+                        <div class="group">
+                            <HugeiconsIcon
+                                icon={TickDouble01Icon}
+                                class="w-6 h-6 text-green-600 cursor-help"
+                            />
+                            <div
+                                class="hidden group-hover:flex bg-secondary absolute text-muted-foreground px-2 line-clamp-1 rounded-full"
+                            >
+                                User is a creator
+                            </div>
+                        </div>
+                    {/if}
+                </div>
+                <p class="text-muted-foreground">{user.email}</p>
+            </div>
         </div>
-        <div class="user-info">
-            <h1 class="user-name">{user.name || "Anonymous"}</h1>
-            <p class="user-email">{user.email}</p>
-            {#if user.isCreator}
-                <span class="creator-badge">✨ Creator</span>
-            {/if}
-        </div>
-        <a href="/profile/tokens" class="manage-tokens-btn">
-            Manage CLI Tokens
+        <a href="/profile/tokens" class="">
+            <button
+                class="bg-gradient-to-b from-primary/50 via-primary to-primary text-secondary px-4 py-2 rounded-3xl"
+                >Manage CLI Tokens</button
+            >
         </a>
     </div>
 
     <!-- Statistics Grid -->
-    <section class="stats-section" in:fade={{ delay: 100 }}>
+    <section class="stats-section mt-18 group" in:fade={{ delay: 100 }}>
         <h2 class="section-title">Your Statistics</h2>
-        <div class="stats-grid">
-            <StatCard 
-                label="Total Courses Completed" 
-                value={statistics.totalCoursesCompleted} 
-                icon="🎓"
+        <div class="grid grid-cols-4">
+            <StatCard
+                label="Total Courses Completed"
+                value={statistics.totalCoursesCompleted}
+                icon={CourseIcon}
             />
-            <StatCard 
-                label="Current Streak" 
-                value={`${statistics.currentStreak} days`} 
-                icon="🔥"
+            <StatCard
+                label="Current Streak"
+                value={`${statistics.currentStreak} days`}
+                icon={FireIcon}
                 trend={statistics.currentStreak > 0 ? "up" : "neutral"}
             />
-            <StatCard 
-                label="Challenges Completed" 
-                value={statistics.challengesCompleted} 
-                icon="⚡"
+            <StatCard
+                label="Challenges Completed"
+                value={statistics.challengesCompleted}
+                icon={Chart01Icon}
             />
-            <StatCard 
-                label="Tutorials Completed" 
-                value={statistics.tutorialsCompleted} 
-                icon="📚"
+            <StatCard
+                label="Tutorials Completed"
+                value={statistics.tutorialsCompleted}
+                icon={MoneyIcon}
             />
-            <StatCard 
-                label="Competitive Problems" 
-                value={statistics.competitiveCompleted} 
-                icon="🏆"
+            <StatCard
+                label="Competitive Problems"
+                value={statistics.competitiveCompleted}
+                icon={Trophy}
             />
-            <StatCard 
-                label="Longest Streak" 
-                value={`${statistics.longestStreak} days`} 
-                icon="🌟"
+            <StatCard
+                label="Longest Streak"
+                value={`${statistics.longestStreak} days`}
+                icon={StarIcon}
             />
         </div>
     </section>
@@ -87,7 +128,9 @@
     <!-- Completed Courses Section -->
     {#if completedCourses && completedCourses.length > 0}
         <section class="courses-section" in:fade={{ delay: 300 }}>
-            <h2 class="section-title">Completed Courses ({completedCourses.length})</h2>
+            <h2 class="section-title">
+                Completed Courses ({completedCourses.length})
+            </h2>
             <div class="courses-grid">
                 {#each completedCourses as course}
                     <CourseCard {course} />
@@ -99,7 +142,12 @@
             <div class="empty-icon">📚</div>
             <h3>No completed courses yet</h3>
             <p>Start learning to see your progress here!</p>
-            <a href="/courses" class="cta-button">Browse Courses</a>
+            <a href="/challenges" class="">
+                <button
+                    class="bg-secondary text-primary border border-border px-4 py-2 rounded-3xl w-[300px]"
+                    >Browse courses</button
+                >
+            </a>
         </section>
     {/if}
 
@@ -107,20 +155,25 @@
     {#if user.isCreator && creatorStats}
         <section class="creator-section" in:fade={{ delay: 400 }}>
             <h2 class="section-title">Creator Statistics</h2>
-            <div class="creator-stats">
-                <StatCard 
-                    label="Published Courses" 
-                    value={creatorStats.publishedCourses} 
-                    icon="📝"
+            <div class="flex w-full flex-row p-4">
+                <StatCard
+                    label="Published Courses"
+                    value={creatorStats.publishedCourses}
+                    icon={CourseIcon}
+                    className="px-8 py-2 w-full"
                 />
-                <StatCard 
-                    label="Total Enrollments" 
-                    value={creatorStats.totalEnrollments} 
-                    icon="👥"
+                <StatCard
+                    label="Total Enrollments"
+                    value={creatorStats.totalEnrollments}
+                    icon={StudentsIcon}
+                    className="w-full px-8 py-2"
                 />
             </div>
-            <a href="/creator/studio" class="creator-studio-btn">
-                Go to Creator Studio →
+            <a href="/creator/studio" class="">
+                <button
+                    class="bg-gradient-to-b from-primary/50 via-primary to-primary text-secondary px-4 py-2 rounded-3xl"
+                    >Go to creator studio</button
+                >
             </a>
         </section>
     {/if}
@@ -164,7 +217,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+        background: linear-gradient(
+            135deg,
+            var(--color-primary),
+            var(--color-secondary)
+        );
         color: white;
         font-size: 2rem;
         font-weight: 700;
@@ -190,7 +247,11 @@
     .creator-badge {
         display: inline-block;
         padding: 0.25rem 0.75rem;
-        background: linear-gradient(135deg, hsl(280, 80%, 60%), hsl(320, 80%, 60%));
+        background: linear-gradient(
+            135deg,
+            hsl(280, 80%, 60%),
+            hsl(320, 80%, 60%)
+        );
         color: white;
         border-radius: 0.5rem;
         font-size: 0.875rem;
@@ -296,7 +357,11 @@
     .creator-studio-btn {
         display: inline-block;
         padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+        background: linear-gradient(
+            135deg,
+            var(--color-primary),
+            var(--color-secondary)
+        );
         color: white;
         border-radius: 0.75rem;
         text-decoration: none;

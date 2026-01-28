@@ -22,7 +22,7 @@
     }: Props = $props();
 
     const variantClasses: Record<string, string> = {
-        default: "bg-secondary text-primary-foreground border-transparent",
+        default: "bg-secondary text-primary border-transparent",
         secondary: "bg-secondary text-secondary-foreground border-transparent",
         outline: "text-foreground border-border bg-transparent",
         beginner: "bg-emerald-100 text-emerald-600 border-emerald-800/50",

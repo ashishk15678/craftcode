@@ -53,7 +53,7 @@ export const load: PageServerLoad = async ({ locals }) => {
         | "advanced",
       iconUrl: challenge.iconUrl,
       authorName: challenge.author.name,
-      stageCount: challenge.stages,
+      stageCount: challenge.lessons,
       completedStages: [],
       //   completedStages: locals.user
       //     ? challenge.stages.filter(

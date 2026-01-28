@@ -117,7 +117,7 @@
                             class="block group"
                         >
                             <GlowCard className="h-full">
-                                <div class="p-6">
+                                <div class="px-6 py-4">
                                     <div
                                         class="flex items-start justify-between"
                                     >
@@ -145,7 +145,7 @@
                                     </p>
 
                                     <div
-                                        class="flex items-center justify-between text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-xl"
+                                        class="flex items-center justify-between text-sm text-muted-foreground px-2 py-1 rounded-xl"
                                     >
                                         <span
                                             >{challenge.stageCount} stages</span
@@ -233,7 +233,7 @@
                     <div class="py-1">
                         <label
                             for="title"
-                            class="block text-sm font-medium text-muted-foreground"
+                            class="block text-sm font-medium text-muted-foreground mb-1"
                             >Title</label
                         >
                         <input
@@ -241,7 +241,7 @@
                             id="title"
                             name="title"
                             required
-                            class="rounded-md border border-border px-2 w-full py-1"
+                            class="rounded-xl border border-border px-2 w-full py-1"
                             placeholder="Build Your Own Redis"
                         />
                     </div>
@@ -249,7 +249,7 @@
                     <div class="py-1">
                         <label
                             for="description"
-                            class="block text-sm font-medium text-muted-foreground"
+                            class="block text-sm font-medium text-muted-foreground mb-1"
                             >Description</label
                         >
                         <textarea
@@ -257,7 +257,7 @@
                             name="description"
                             required
                             rows="3"
-                            class="rounded-md border border-border px-2 w-full resize-none"
+                            class="rounded-xl border border-border px-2 w-full resize-none"
                             placeholder="A brief description of the challenge..."
                         ></textarea>
                     </div>
@@ -279,7 +279,26 @@
                             <option value="advanced">Advanced</option>
                         </select>
                     </div>
+                    <div>
+                        <label
+                            for="type"
+                            class="block text-sm font-medium text-muted-foreground mb-1"
+                            >What type of Test ?</label
+                        >
 
+                        <select
+                            id="type"
+                            name="type"
+                            required
+                            class="input-field rounded-xl placeholder:text-muted-foreground w-full text-center py-1"
+                        >
+                            <option value="bash">Bash</option>
+                            <option value="css">CSS</option>
+                            <option value="node">Node.js</option>
+                            <option value="python">Python3</option>
+                            <option value="custom">Custom </option>
+                        </select>
+                    </div>
                     <div class="flex gap-3 pt-4">
                         <button
                             type="button"

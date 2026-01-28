@@ -1,6 +1,6 @@
-import type { PageServerLoad } from './$types';
-import { error } from '@sveltejs/kit';
-import { db } from '$lib/server/db';
+import type { PageServerLoad } from "./$types";
+import { error } from "@sveltejs/kit";
+import { db } from "$lib/server/db";
 
 export const load: PageServerLoad = async ({ params, locals }) => {
   const userId = locals.user?.id;
@@ -9,28 +9,33 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     where: { slug: params.slug },
     include: {
       author: {
-        select: { id: true, name: true }
+        select: { id: true, name: true },
       },
       lessons: {
-        orderBy: { order: 'asc' },
+        orderBy: { order: "asc" },
         select: {
           id: true,
           order: true,
           title: true,
           instructionsMd: true,
           testScript: true,
-          testScriptUrl: true
-        }
-      }
-    }
+          testScriptUrl: true,
+          // CSS Challenge specific fields
+          targetImageUrl: true,
+          canvasWidth: true,
+          canvasHeight: true,
+          matchThreshold: true,
+        },
+      },
+    },
   });
 
   if (!challenge) {
-    throw error(404, 'Challenge not found');
+    throw error(404, "Challenge not found");
   }
 
   if (!challenge.isPublished && challenge.authorId !== userId) {
-    throw error(404, 'Challenge not found');
+    throw error(404, "Challenge not found");
   }
 
   // Get user's progress if authenticated
@@ -40,23 +45,23 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       where: {
         userId,
         lesson: {
-          courseId: challenge.id
-        }
+          courseId: challenge.id,
+        },
       },
       select: {
         lessonId: true,
-        completedAt: true
-      }
+        completedAt: true,
+      },
     });
   }
 
-  const completedLessonIds = new Set(userProgress.map(p => p.lessonId));
+  const completedLessonIds = new Set(userProgress.map((p) => p.lessonId));
   const isEnrolled = userProgress.length > 0;
 
   // Find current lesson (first incomplete)
-  const currentLesson = challenge.lessons.find(
-    lesson => !completedLessonIds.has(lesson.id)
-  ) || challenge.lessons[0];
+  const currentLesson =
+    challenge.lessons.find((lesson) => !completedLessonIds.has(lesson.id)) ||
+    challenge.lessons[0];
 
   return {
     challenge: {
@@ -70,7 +75,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       iconUrl: challenge.iconUrl,
       coverUrl: challenge.coverUrl,
       authorName: challenge.author.name,
-      isOwner: challenge.authorId === userId
+      isOwner: challenge.authorId === userId,
     },
     stages: challenge.lessons.map((lesson) => ({
       id: lesson.id,
@@ -78,12 +83,16 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       title: lesson.title,
       instructionsMd: lesson.instructionsMd,
       hasTestScript: !!(lesson.testScript || lesson.testScriptUrl),
-      isCompleted: completedLessonIds.has(lesson.id)
+      isCompleted: completedLessonIds.has(lesson.id),
+      // CSS Challenge specific fields
+      targetImageUrl: lesson.targetImageUrl,
+      canvasWidth: lesson.canvasWidth,
+      canvasHeight: lesson.canvasHeight,
+      matchThreshold: lesson.matchThreshold,
     })),
     isEnrolled,
     isAuthenticated: !!userId,
     currentLessonId: currentLesson?.id || null,
-    completedLessonIds: Array.from(completedLessonIds)
+    completedLessonIds: Array.from(completedLessonIds),
   };
 };
-

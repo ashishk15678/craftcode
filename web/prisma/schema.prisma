@@ -84,6 +84,7 @@ enum CourseType {
   CHALLENGE   // Multi-stage build projects (CodeCrafters-style)
   TUTORIAL    // Step-by-step learning courses
   COMPETITIVE // Competitive programming problems
+  CSS
 }
 
 enum TestRunnerType {
@@ -92,6 +93,7 @@ enum TestRunnerType {
   PYTHON      // Python (pytest)
   IO_MATCHING // Input/output matching for competitive programming
   CUSTOM      // Custom test runner
+  CSS
 }
 
 model Course {
@@ -127,6 +129,12 @@ model Lesson {
   testScript     String?        @db.Text // Inline script storage alternative
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+
+  // CSS Challenge specific fields
+  targetImageUrl String?        // URL to target image for CSS challenges
+  canvasWidth    Int            @default(400)
+  canvasHeight   Int            @default(300)
+  matchThreshold Float          @default(95.0)  // Percentage required to pass
 
   courseId String
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)

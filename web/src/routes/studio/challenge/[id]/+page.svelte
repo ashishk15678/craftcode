@@ -259,9 +259,105 @@
                     </SplitPane>
                 </div>
 
-                <!-- Test script section -->
+                <!-- Test/Settings Section -->
                 <div class="border-t border-border bg-card p-4 flex-shrink-0">
-                <h3 class="font-medium text-foreground mb-4">Test Script (Bash)</h3>
+                {#if data.challenge.testRunnerType === 'CSS'}
+                    <!-- CSS Battle Settings -->
+                    <h3 class="font-medium text-foreground mb-4">CSS Battle Settings</h3>
+                    
+                    <form method="POST" action="?/updateStage" use:enhance class="space-y-4">
+                        <input
+                            type="hidden"
+                            name="stageId"
+                            value={selectedStage.id}
+                        />
+                        
+                        <div>
+                            <label for="targetImageUrl" class="block text-sm font-medium text-muted-foreground mb-1">
+                                Target Image URL
+                            </label>
+                            <input
+                                type="url"
+                                id="targetImageUrl"
+                                name="targetImageUrl"
+                                class="input-field w-full"
+                                placeholder="https://example.com/target.png"
+                                value={selectedStage.targetImageUrl || ''}
+                            />
+                            <p class="text-xs text-muted-foreground mt-1">
+                                URL to the target image users need to recreate
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label for="canvasWidth" class="block text-sm font-medium text-muted-foreground mb-1">
+                                    Canvas Width
+                                </label>
+                                <input
+                                    type="number"
+                                    id="canvasWidth"
+                                    name="canvasWidth"
+                                    class="input-field w-full text-center"
+                                    value={selectedStage.canvasWidth || 400}
+                                    min="100"
+                                    max="800"
+                                />
+                            </div>
+                            <div>
+                                <label for="canvasHeight" class="block text-sm font-medium text-muted-foreground mb-1">
+                                    Canvas Height
+                                </label>
+                                <input
+                                    type="number"
+                                    id="canvasHeight"
+                                    name="canvasHeight"
+                                    class="input-field w-full text-center"
+                                    value={selectedStage.canvasHeight || 300}
+                                    min="100"
+                                    max="800"
+                                />
+                            </div>
+                            <div>
+                                <label for="matchThreshold" class="block text-sm font-medium text-muted-foreground mb-1">
+                                    Match Threshold %
+                                </label>
+                                <input
+                                    type="number"
+                                    id="matchThreshold"
+                                    name="matchThreshold"
+                                    class="input-field w-full text-center"
+                                    value={selectedStage.matchThreshold || 95}
+                                    min="50"
+                                    max="100"
+                                    step="0.5"
+                                />
+                            </div>
+                        </div>
+
+                        {#if selectedStage.targetImageUrl}
+                            <div>
+                                <label class="block text-sm font-medium text-muted-foreground mb-2">Preview</label>
+                                <img
+                                    src={selectedStage.targetImageUrl}
+                                    alt="Target Preview"
+                                    class="border border-border rounded-lg max-w-[200px] max-h-[150px] object-contain"
+                                />
+                            </div>
+                        {/if}
+
+                        <div class="flex justify-end pt-2">
+                            <button
+                                type="submit"
+                                class="btn-primary text-sm"
+                            >
+                                Save CSS Settings
+                            </button>
+                        </div>
+                    </form>
+                {:else}
+                    <!-- Standard Test Script (Bash) -->
+                    <h3 class="font-medium text-foreground mb-4">Test Script (Bash)</h3>
                 
                 <div class="mb-4 flex gap-2 overflow-x-auto pb-2">
                     <button 
@@ -364,6 +460,7 @@ echo "Module valid"`;
                         </button>
                     </div>
                 </form>
+                {/if}
                 </div>
             </div>
         {:else}

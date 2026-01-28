@@ -1,70 +1,85 @@
 <script lang="ts">
-  export let label: string;
-  export let value: string | number;
-  export let icon: string = "📊";
-  export let trend: "up" | "down" | "neutral" = "neutral";
+    import { CourseIcon } from "@hugeicons/core-free-icons";
+    import { HugeiconsIcon } from "@hugeicons/svelte";
+    export let label: string;
+    export let value: string | number;
+    export let icon: any = CourseIcon;
+    export let trend: "up" | "down" | "neutral" = "neutral";
+    export let className: string = "";
 </script>
 
-<div class="stat-card">
-  <div class="stat-icon">{icon}</div>
-  <div class="stat-content">
-    <div class="stat-label">{label}</div>
-    <div class="stat-value" class:trend-up={trend === "up"} class:trend-down={trend === "down"}>
-      {value}
+<div class="group relative px-4 py-2 border border-border overflow-hidden">
+    <div class={"flex items-start font-thin gap-4 " + className}>
+        <div class="">
+            <HugeiconsIcon {icon} class="" />
+        </div>
+        <div class="text-md line-clamp-1 font-thin">{label}</div>
     </div>
-  </div>
+
+    <div
+        class="mt-4 w-full flex justify-end items-center text-2xl font-mono font-bold"
+        class:trend-up={trend === "up"}
+        class:trend-down={trend === "down"}
+    >
+        {value}
+    </div>
+
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
 </div>
 
 <style>
-  .stat-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 1rem;
-    transition: all 0.2s ease;
-  }
+    /* Position the corners absolutely relative to the container */
+    .corner {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        opacity: 0;
+        transition: all 0.3s ease;
+        border: 2px solid currentColor; /* Follows text color or set specific color */
+        pointer-events: none;
+    }
 
-  .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: var(--color-primary);
-  }
+    /* Initial Offsets for the "springing in" effect */
+    .tl {
+        top: 0;
+        left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        transform: translate(-5px, -5px);
+    }
+    .tr {
+        top: 0;
+        right: 0;
+        border-left: 0;
+        border-bottom: 0;
+        transform: translate(5px, -5px);
+    }
+    .bl {
+        bottom: 0;
+        left: 0;
+        border-right: 0;
+        border-top: 0;
+        transform: translate(-5px, 5px);
+    }
+    .br {
+        bottom: 0;
+        right: 0;
+        border-left: 0;
+        border-top: 0;
+        transform: translate(5px, 5px);
+    }
 
-  .stat-icon {
-    font-size: 2rem;
-    width: 3rem;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-primary-alpha-10);
-    border-radius: 0.75rem;
-  }
+    /* Reveal and snap to corners on hover */
+    .group:hover .corner {
+        opacity: 1;
+        transform: translate(0, 0);
+    }
 
-  .stat-content {
-    flex: 1;
-  }
-
-  .stat-label {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    margin-bottom: 0.25rem;
-  }
-
-  .stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-  }
-
-  .trend-up {
-    color: var(--color-success);
-  }
-
-  .trend-down {
-    color: var(--color-error);
-  }
+    /* Optional: subtle dimming of the border on hover to emphasize corners */
+    .group:hover {
+        cursor: crosshair;
+    }
 </style>

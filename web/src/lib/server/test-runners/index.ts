@@ -215,6 +215,22 @@ export class IOMatchingTestRunner extends TestRunner {
   }
 }
 
+// CSS Test Runner (client-side image comparison)
+export class CSSTestRunner extends TestRunner {
+  async execute(workingDir: string, userCode: string): Promise<TestResult> {
+    const startTime = Date.now();
+    
+    // CSS tests are validated client-side by comparing rendered output to target image
+    // The server receives the match percentage from the client and validates it
+    // This is a placeholder that returns success - actual validation happens in the API endpoint
+    return {
+      success: true,
+      output: "CSS validation is performed client-side",
+      duration: Date.now() - startTime,
+    };
+  }
+}
+
 // Factory function to create appropriate test runner
 export function createTestRunner(config: TestRunnerConfig): TestRunner {
   switch (config.type) {
@@ -226,6 +242,8 @@ export function createTestRunner(config: TestRunnerConfig): TestRunner {
       return new PythonTestRunner(config);
     case "IO_MATCHING":
       return new IOMatchingTestRunner(config);
+    case "CSS":
+      return new CSSTestRunner(config);
     case "CUSTOM":
       return new BashTestRunner(config); // Fallback to bash for custom
     default:

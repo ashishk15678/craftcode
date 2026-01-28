@@ -7,7 +7,6 @@ export const load: PageServerLoad = async ({ locals }) => {
     throw redirect(303, "/auth/login?redirect=/studio");
   }
 
-  // Check creator status from Polar (now synced to user record)
   const isCreator = await db.user.findUniqueOrThrow({
     where: {
       id: locals.user.id,
@@ -15,7 +14,6 @@ export const load: PageServerLoad = async ({ locals }) => {
     },
   });
 
-  // Get user's challenges
   const challenges = await db.course.findMany({
     where: {
       authorId: locals.user.id,
@@ -39,7 +37,6 @@ export const load: PageServerLoad = async ({ locals }) => {
       description: c.description,
       difficulty: c.difficulty,
       isPublished: c.isPublished,
-      stageCount: 1 || c.stage,
       updatedAt: c.updatedAt.toISOString(),
     })),
   };

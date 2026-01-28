@@ -3,8 +3,10 @@
     import GlowCard from "$lib/components/ui/GlowCard.svelte";
     import Badge from "$lib/components/ui/Badge.svelte";
     import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
+    import CSSBattleEditor from "$lib/components/challenge/CSSBattleEditor.svelte";
     import type { PageData } from "./$types";
     import { marked } from "marked";
+    import CodeComp from "$lib/components/CodeComp.svelte";
 
     let { data } = $props<{ data: PageData }>();
 
@@ -27,6 +29,17 @@
         intermediate: "Intermediate",
         advanced: "Advanced",
     };
+
+    // Check if this is a CSS challenge
+    const isCSSChallenge = $derived(data.challenge.testRunnerType === "CSS");
+
+    function handleTestComplete(result: any) {
+        // Refresh the page data or update UI after successful completion
+        if (result.success && result.lessonComplete) {
+            // Could navigate to next stage or show success message
+            console.log("Stage completed!", result);
+        }
+    }
 </script>
 
 <svelte:head>
@@ -118,42 +131,69 @@
                         </div>
                     </div>
 
-                    <GlowCard className="w-full lg:w-80  shadow-xl">
-                        <div class="p-5">
-                            <h3 class="font-semibold text-foreground">
-                                Get Started
-                            </h3>
-                            <p class="text-sm text-muted-foreground mb-4">
-                                Install the CLI and run tests locally:
-                            </p>
-                            <div
-                                class="bg-background rounded-lg font-mono text-sm"
-                            >
-                                <div class="text-muted-foreground">
-                                    # Install CLI
-                                </div>
-                                <div class="text-foreground mb-4">
-                                    npm i -g craftcode-cli
-                                </div>
-                                <div class="text-muted-foreground">
-                                    # Run tests
-                                </div>
-                                <div class="text-foreground">
-                                    craftcode test
+                    {#if !isCSSChallenge}
+                        <GlowCard className="w-full lg:w-80  shadow-xl">
+                            <div class="p-5">
+                                <h3 class="font-semibold text-foreground">
+                                    Get Started
+                                </h3>
+                                <p class="text-sm text-muted-foreground mb-4">
+                                    Install the CLI and run tests locally:
+                                </p>
+                                <div
+                                    class="bg-background rounded-lg font-mono text-sm"
+                                >
+                                    <CodeComp>
+                                        <div class="text-muted-foreground">
+                                            # Install cli
+                                        </div>
+                                        <div class="text-foreground">
+                                            npm i -g craftcode
+                                        </div>
+                                        <div class="text-muted-foreground mt-2">
+                                            # Run tests
+                                        </div>
+                                        <div class="text-foreground">
+                                            craftcode test
+                                        </div>
+                                    </CodeComp>
                                 </div>
                             </div>
-                        </div>
-                    </GlowCard>
+                        </GlowCard>
+                    {:else}
+                        <GlowCard className="w-full lg:w-80 shadow-xl">
+                            <div class="p-5">
+                                <h3 class="font-semibold text-foreground">
+                                    CSS Battle
+                                </h3>
+                                <p class="text-sm text-muted-foreground mb-4">
+                                    Recreate the target image using HTML/CSS or
+                                    React+Tailwind. Match at least {selectedStage?.matchThreshold ||
+                                        95}% to pass.
+                                </p>
+                                <div class="flex items-center gap-2 text-sm">
+                                    <span class="text-muted-foreground"
+                                        >Canvas:</span
+                                    >
+                                    <span class="font-mono"
+                                        >{selectedStage?.canvasWidth ||
+                                            400}×{selectedStage?.canvasHeight ||
+                                            300}</span
+                                    >
+                                </div>
+                            </div>
+                        </GlowCard>
+                    {/if}
                 </div>
             </div>
         </section>
 
         <!-- Content -->
-        <section class="px-4 sm:px-6 lg:px-8 py-8">
-            <div class="mx-auto max-w-7xl">
+        <section class=" sm:px-6 py-8 w-full min-w-screen">
+            <div class="mx-auto">
                 <div class="flex flex-col lg:flex-row gap-8">
                     <!-- Stage sidebar -->
-                    <aside class="w-full lg:w-72 flex-shrink-0">
+                    <aside class="w-full lg:w-30 flex-shrink-0">
                         <div class="sticky top-20">
                             <h2 class="font-semibold text-foreground mb-4">
                                 Stages
@@ -161,7 +201,7 @@
                             <div class="space-y-2">
                                 {#each data.stages as stage (stage.id)}
                                     <button
-                                        class="w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center gap-3
+                                        class="w-full text-left px-4 py-1 rounded-3xl transition-colors flex items-center gap-3
                       {selectedStageId === stage.id
                                             ? 'bg-primary/10 border border-primary/20'
                                             : 'bg-card border border-border hover:border-primary/30'}"
@@ -205,50 +245,74 @@
                         </div>
                     </aside>
 
-                    <!-- Instructions -->
+                    <!-- Main Content Area -->
                     <main class="flex-1 min-w-0">
                         {#if selectedStage}
-                            <GlowCard>
-                                <div class="p-6 sm:p-8">
-                                    <div class="flex items-center gap-3 mb-6">
-                                        <div
-                                            class="w-8 h-8 rounded-full flex items-center justify-center
-                        {selectedStage.isCompleted
-                                                ? 'bg-emerald-500 text-white'
-                                                : 'bg-primary text-primary-foreground'}"
-                                        >
-                                            {#if selectedStage.isCompleted}
-                                                <svg
-                                                    class="w-5 h-5"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M5 13l4 4L19 7"
-                                                    />
-                                                </svg>
-                                            {:else}
-                                                <span class="font-medium"
-                                                    >{selectedStage.order}</span
-                                                >
-                                            {/if}
-                                        </div>
-                                        <h2
-                                            class="text-2xl font-bold text-foreground"
-                                        >
-                                            {selectedStage.title}
-                                        </h2>
-                                    </div>
-
-                                    <MarkdownRenderer
-                                        content={renderedInstructions as string}
+                            {#if isCSSChallenge}
+                                <!-- CSS Battle Editor -->
+                                <div
+                                    class="h-[calc(100vh-200px)] rounded-lg overflow-hidden border border-border"
+                                >
+                                    <CSSBattleEditor
+                                        lessonId={selectedStage.id}
+                                        challengeSlug={data.challenge.slug}
+                                        targetImageUrl={selectedStage.targetImageUrl ||
+                                            ""}
+                                        canvasWidth={selectedStage.canvasWidth ||
+                                            400}
+                                        canvasHeight={selectedStage.canvasHeight ||
+                                            300}
+                                        matchThreshold={selectedStage.matchThreshold ||
+                                            95}
+                                        onTestComplete={handleTestComplete}
                                     />
                                 </div>
-                            </GlowCard>
+                            {:else}
+                                <!-- Standard Instructions -->
+                                <GlowCard>
+                                    <div class="p-6 sm:p-8">
+                                        <div
+                                            class="flex items-center gap-3 mb-6"
+                                        >
+                                            <div
+                                                class="w-8 h-8 rounded-full flex items-center justify-center
+                        {selectedStage.isCompleted
+                                                    ? 'bg-emerald-500 text-white'
+                                                    : 'bg-primary text-primary-foreground'}"
+                                            >
+                                                {#if selectedStage.isCompleted}
+                                                    <svg
+                                                        class="w-5 h-5"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M5 13l4 4L19 7"
+                                                        />
+                                                    </svg>
+                                                {:else}
+                                                    <span class="font-medium"
+                                                        >{selectedStage.order}</span
+                                                    >
+                                                {/if}
+                                            </div>
+                                            <h2
+                                                class="text-2xl font-bold text-foreground"
+                                            >
+                                                {selectedStage.title}
+                                            </h2>
+                                        </div>
+
+                                        <MarkdownRenderer
+                                            content={renderedInstructions as string}
+                                        />
+                                    </div>
+                                </GlowCard>
+                            {/if}
                         {:else}
                             <div
                                 class="text-center py-20 text-muted-foreground"

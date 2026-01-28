@@ -20,7 +20,7 @@
 
 <div
     bind:this={card}
-    class="relative overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 {className}"
+    class="relative overflow-hidden rounded-3xl border border-border bg-card transition-all duration-300 {className}"
     role="article"
 >
     <div class="relative z-10">

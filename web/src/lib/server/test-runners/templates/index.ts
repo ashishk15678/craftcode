@@ -50,6 +50,15 @@ export const AVAILABLE_TEMPLATES: Record<TestRunnerType, TestTemplate[]> = {
       content: "",
     },
   ],
+  CSS: [
+    {
+      name: "CSS Battle",
+      type: "CSS",
+      description: "Visual CSS challenge with image comparison",
+      filename: "css-battle.template.html",
+      content: "",
+    },
+  ],
   CUSTOM: [],
 };
 

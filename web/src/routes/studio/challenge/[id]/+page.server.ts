@@ -34,6 +34,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       description: challenge.description,
       difficulty: challenge.difficulty,
       isPublished: challenge.isPublished,
+      testRunnerType: challenge.testRunnerType,
     },
     stages: challenge.lessons.map((s: any) => ({
       id: s.id,
@@ -42,6 +43,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       instructionsMd: s.instructionsMd,
       testScriptUrl: s.testScriptUrl,
       testScript: s.testScript,
+      // CSS Challenge specific fields
+      targetImageUrl: s.targetImageUrl,
+      canvasWidth: s.canvasWidth,
+      canvasHeight: s.canvasHeight,
+      matchThreshold: s.matchThreshold,
     })),
     isCreator: creatorStatus,
   };
@@ -95,6 +101,11 @@ export const actions: Actions = {
     const title = formData.get("title")?.toString();
     const instructionsMd = formData.get("instructionsMd")?.toString();
     const testScript = formData.get("testScript")?.toString();
+    // CSS Challenge specific fields
+    const targetImageUrl = formData.get("targetImageUrl")?.toString();
+    const canvasWidth = formData.get("canvasWidth")?.toString();
+    const canvasHeight = formData.get("canvasHeight")?.toString();
+    const matchThreshold = formData.get("matchThreshold")?.toString();
 
     if (!stageId) {
       return fail(400, { error: "Stage ID required" });
@@ -106,6 +117,11 @@ export const actions: Actions = {
         title: title || undefined,
         instructionsMd: instructionsMd || undefined,
         testScript: testScript || undefined,
+        // CSS Challenge specific fields
+        targetImageUrl: targetImageUrl || undefined,
+        canvasWidth: canvasWidth ? parseInt(canvasWidth) : undefined,
+        canvasHeight: canvasHeight ? parseInt(canvasHeight) : undefined,
+        matchThreshold: matchThreshold ? parseFloat(matchThreshold) : undefined,
       },
     });
 
