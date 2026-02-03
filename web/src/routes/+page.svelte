@@ -58,7 +58,7 @@
             <div class="text-center max-w-2xl mx-auto">
                 <!-- Badge -->
                 <div
-                    class="inline-flex items-center gap-2 px-6 py-1 text-muted-foreground text-sm rounded-full bg-linear-120 from-secondary/20 to-primary/10
+                    class="inline-flex items-center gap-2 px-6 py-0.5 text-muted-foreground text-sm rounded-full bg-linear-120 from-secondary/20 to-primary/10
                     border border-border mb-8"
                 >
                     New: Build Your Own Redis Challenge
@@ -69,7 +69,9 @@
                 >
                     <span
                         class="bg-primary text-transparent to-primary bg-clip-text"
-                        >Learn by Building <br /> Complex Systems</span
+                        >Learn by <span class="rubik-storm-regular text-6xl">
+                            Building
+                        </span> <br /> Complex Systems</span
                     >
                 </h1>
                 <p
@@ -137,7 +139,7 @@
     <section class="relative px-4 sm:px-6 lg:px-8 py-20 mx-3xl">
         <div class="mx-auto max-w-4xl">
             <div class=" mb-16">
-                <h2 class="text-3xl sm:text-4xl font-bold text-foreground mb-2">
+                <h2 class="text-2xl font-bold text-foreground mb-2">
                     How It Works
                 </h2>
                 <p class="text-muted-foreground text-lg mx-auto">
@@ -146,7 +148,7 @@
                 </p>
             </div>
 
-            <div class="flex flex-row relative w-full">
+            <div class="flex flex-col md:flex-row relative w-full">
                 <div class="bg-secondary [perspective:1200px]">
                     <GlowCard
                         className="paper-lift-card rounded-none flex flex-col gap-y-3 items-start p-6 border-b
@@ -216,9 +218,7 @@
         <div class="mx-auto max-w-4xl">
             <div class="flex items-center justify-between mb-12">
                 <div>
-                    <h2
-                        class="text-3xl sm:text-4xl font-bold text-foreground mb-2"
-                    >
+                    <h2 class="text-2xl font-bold text-foreground mb-2">
                         Featured Challenges
                     </h2>
                     <p class="text-muted-foreground">
@@ -233,13 +233,15 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 rounded-2xl"
+            >
                 {#each featuredChallenges as challenge}
-                    <GlowCard>
+                    <GlowCard className="rounded-none">
                         <div class="p-6">
                             <div class="flex items-center gap-4 mb-4">
                                 <div
-                                    class="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center"
+                                    class="w-12 h-12 bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center"
                                 >
                                     <span class="text-2xl"
                                         >{challenge.icon}</span
@@ -290,7 +292,7 @@
             >
                 <div>
                     <h2
-                        class="text-3xl sm:text-4xl font-bold text-foreground mb-4"
+                        class="md:text-3xl text-2xl font-bold text-foreground mb-4"
                     >
                         Ready to Start Building?
                     </h2>

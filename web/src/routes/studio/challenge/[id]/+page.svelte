@@ -5,6 +5,8 @@
     import type { PageData, ActionData } from "./$types";
     import { enhance } from "$app/forms";
     import { marked } from "marked";
+    import { HugeiconsIcon } from "@hugeicons/svelte";
+    import { FullScreenIcon } from "@hugeicons/core-free-icons";
 
     let { data, form } = $props<{ data: PageData; form: ActionData }>();
 
@@ -27,13 +29,30 @@
         }
     });
     let creatingStage = $state(false);
+
+    // full screen logic
+    let containerRef = $state<HTMLElement | null>(null);
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            containerRef?.requestFullscreen().catch((err) => {
+                console.error(
+                    `Error attempting to enable fullscreen: ${err.message}`,
+                );
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
 </script>
 
 <svelte:head>
     <title>Edit: {data.challenge.title} - CraftCode</title>
 </svelte:head>
-
-<div class="h-screen flex flex-col bg-background">
+<div
+    bind:this={containerRef}
+    class="h-screen flex flex-col bg-background w-full max-w-none"
+>
     <!-- Header -->
     <header
         class="border-b border-border bg-card px-4 py-2 flex items-center justify-between shrink-0"
@@ -73,6 +92,13 @@
         </div>
 
         <div class="flex items-center gap-3">
+            <button
+                class="hover:bg-secondary p-0.5 rounded-md transition-all"
+                onclick={toggleFullScreen}
+            >
+                <HugeiconsIcon icon={FullScreenIcon} />
+            </button>
+
             {#if data.challenge.isPublished}
                 <form method="POST" action="?/unpublish" use:enhance>
                     <button
@@ -87,7 +113,7 @@
                     <button
                         type="submit"
                         disabled={!data.isCreator}
-                        class="btn-primary text-sm"
+                        class="bg-secondary px-2 py-1 rounded-full text-muted-foreground text-xs border border-border hover:text-primary"
                         title={!data.isCreator
                             ? "Creator subscription required"
                             : ""}
@@ -137,7 +163,7 @@
             <div class="flex-1 overflow-auto p-2">
                 {#each data.stages as stage (stage.id)}
                     <button
-                        class="w-full text-left px-3 py-2 rounded-lg mb-1 transition-colors
+                        class="w-full text-left px-3 py-1 rounded-xl mb-1 transition-colors
               {selectedStageId === stage.id
                             ? 'bg-primary/10 text-primary border border-primary/20'
                             : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}"
@@ -243,7 +269,7 @@
                                         />
                                         <button
                                             type="submit"
-                                            class="text-xs btn-secondary py-1 px-3"
+                                            class="text-xs text-green-500 underline py-1 px-3"
                                         >
                                             {saving ? "Saving..." : "Save"}
                                         </button>
@@ -508,7 +534,7 @@ echo "Module valid"`;
                                 </p>
                                 <button
                                     type="submit"
-                                    class="btn-secondary text-sm"
+                                    class="bg-secondary rounded-xl p-2 border border-border text-sm"
                                 >
                                     Save Test Script
                                 </button>

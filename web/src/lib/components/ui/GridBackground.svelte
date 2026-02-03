@@ -62,8 +62,4 @@
             mask={fadeEdges ? "url(#grid-mask)" : undefined}
         />
     </svg>
-
-    <!-- Gradient orbs for extra depth -->
-    <div class="absolute h-80 w-80"></div>
-    <div class="absolute h-80 w-80">></div>
 </div>

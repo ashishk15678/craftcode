@@ -42,15 +42,13 @@
             <!-- Logo -->
             <a href="/" class="flex items-center gap-2 group">
                 <div class="relative w-8 h-8">
-                    <!-- Animated logo glow -->
-                    <div
-                        class="absolute inset-0 rounded-lg bg-linear-to-br from-primary to-secondary blur-sm transition-opacity"
-                    ></div>
-                    <div
-                        class="relative w-full h-full rounded-lg bg-linear-to-br from-primary to-blue-500 flex items-center justify-center"
-                    >
-                        <span class="text-primary font-bold text-sm">CC</span>
-                    </div>
+                    <img
+                        src={"/assets/favicon.png"}
+                        alt="Logo"
+                        width={40}
+                        height={40}
+                        class="rounded-full"
+                    />
                 </div>
                 <span class="font-bold text-lg text-foreground hidden sm:block">
                     CraftCode

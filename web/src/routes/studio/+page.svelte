@@ -15,7 +15,7 @@
     <title>Creator Studio - CraftCode</title>
 </svelte:head>
 
-<div class="relative min-h-screen">
+<div class="relative min-h-screen mx-auto max-w-4xl">
     <GridBackground fadeEdges={true} animated={false} />
 
     <div class="relative px-4 sm:px-6 lg:px-8 py-12">

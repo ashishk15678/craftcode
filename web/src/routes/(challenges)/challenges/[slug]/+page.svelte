@@ -46,7 +46,7 @@
     <meta name="description" content={data.challenge.description} />
 </svelte:head>
 
-<div class="relative min-h-screen w-full">
+<div class="relative min-h-screen w-full max-w-4xl mx-auto">
     <GridBackground fadeEdges={true} animated={false} />
 
     <div class="relative w-full">

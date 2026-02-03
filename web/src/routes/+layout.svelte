@@ -2,19 +2,19 @@
     import "../app.css";
     import Header from "$lib/components/Header.svelte";
     import type { LayoutData } from "./$types";
-    import { asset, assets } from "$app/paths";
-
     let { data, children } = $props<{ data: LayoutData; children: any }>();
 </script>
 
-<div class="min-h-screen">
+<div class="min-h-screen bg-background">
     <Header user={data.user} />
 
-    <main class="pt-16 max-w-4xl mx-auto">
+    <main
+        class="pt-16 mx-auto shadow-xl border-x-4 bg-background border-border"
+    >
         {@render children()}
     </main>
 
-    <footer class="border-t rounded-t-4xl border-border bg-card mt-20">
+    <footer class="border-t rounded-t-4xl border-border bg-card w-full">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div class="md:col-span-2">
@@ -23,10 +23,10 @@
                             class="w-8 h-8 rounded-lg flex items-center justify-center"
                         >
                             <img
-                                src={asset("/favicon.png")}
+                                src={"/assets/favicon.png"}
                                 alt="Logo"
-                                width={18}
-                                height={18}
+                                width={24}
+                                height={24}
                             />
                         </div>
                         <span class="font-bold text-lg text-foreground"

@@ -1,9 +1,10 @@
 // Type definitions for CraftCode CLI
 
 export interface EnvironmentConfig {
-  type: string;
+  type: "wsl" | "msys" | "mac" | "bash";
   version?: string;
-  compiler?: string;
+  name: "cpp" | "c" | "js" | "ts" | "py" | "bash";
+  compiler?: "node" | "python3" | "bash" | "gcc" | "g++" | "cc";
   compilerFlags?: string[];
   linkerFlags?: string[];
   sourceFiles?: string[];
@@ -60,7 +61,7 @@ export interface TestCase {
 }
 
 export interface TestsResponse {
-  tests: TestCase | TestCase[];  // API returns single object, we normalize to array
+  tests: TestCase | TestCase[];
   metadata: {
     testRunnerType?: string;
     lessonId: string;

@@ -36,7 +36,7 @@
     />
 </svelte:head>
 
-<div class="relative min-h-screen">
+<div class="relative min-h-screen max-w-4xl mx-auto">
     <GridBackground fadeEdges={true} animated={false} />
 
     <div class="relative px-4 sm:px-6 lg:px-8 py-12">
