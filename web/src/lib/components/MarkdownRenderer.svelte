@@ -1,12 +1,13 @@
 <script lang="ts">
-  interface Props {
-    content: string;
-  }
+    interface Props {
+        content: string;
+    }
 
-  let { content }: Props = $props();
+    let { content }: Props = $props();
 </script>
 
-<div class="prose prose-invert prose-lg max-w-none
+<div
+    class="prose prose-invert prose-lg max-w-none
   prose-headings:text-foreground prose-headings:font-semibold
   prose-p:text-muted-foreground
   prose-a:text-primary prose-a:no-underline hover:prose-a:underline
@@ -16,6 +17,7 @@
   prose-blockquote:border-primary prose-blockquote:text-muted-foreground
   prose-li:text-muted-foreground
   prose-hr:border-border
-">
-  {@html content}
+"
+>
+    {@html content}
 </div>

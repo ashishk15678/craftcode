@@ -21,9 +21,9 @@ export const GET: RequestHandler = async ({ request }) => {
   const progress = await db.userProgress.findMany({
     where: { userId: user.id },
     include: {
-      stage: {
+      lesson: {
         include: {
-          challenge: true
+          course: true
         }
       }
     },
@@ -35,16 +35,16 @@ export const GET: RequestHandler = async ({ request }) => {
   let currentStage;
   
   if (progress.length > 0) {
-    const lastChallenge = progress[0].stage.challenge;
-    const lastStageOrder = progress[0].stage.order;
+    const lastChallenge = progress[0].lesson.course;
+    const lastStageOrder = progress[0].lesson.order;
 
-    currentStage = await db.stage.findFirst({
+    currentStage = await db.lesson.findFirst({
       where: {
-        challengeId: lastChallenge.id,
+        courseId: lastChallenge.id,
         order: lastStageOrder + 1
       },
       include: {
-        challenge: {
+        course: {
           select: { title: true, slug: true }
         }
       }
@@ -68,20 +68,20 @@ export const GET: RequestHandler = async ({ request }) => {
     const challengeSlug = url.searchParams.get('challenge');
 
     if (challengeSlug) {
-      const challenge = await db.challenge.findUnique({
+      const challenge = await db.course.findUnique({
         where: { slug: challengeSlug },
         include: {
-          stages: {
+          lessons: {
             where: { order: 1 },
             take: 1
           }
         }
       });
 
-      if (challenge && challenge.stages.length > 0) {
+      if (challenge && challenge.lessons.length > 0) {
         currentStage = {
-          ...challenge.stages[0],
-          challenge: { title: challenge.title, slug: challenge.slug }
+          ...challenge.lessons[0],
+          course: { title: challenge.title, slug: challenge.slug }
         };
       }
     }
@@ -99,8 +99,8 @@ export const GET: RequestHandler = async ({ request }) => {
       id: currentStage.id,
       order: currentStage.order,
       title: currentStage.title,
-      challengeTitle: currentStage.challenge.title,
-      challengeSlug: currentStage.challenge.slug,
+      challengeTitle: currentStage.course.title,
+      challengeSlug: currentStage.course.slug,
       testScript: currentStage.testScript || null,
       testScriptUrl: currentStage.testScriptUrl || null
     }

@@ -26,6 +26,7 @@
             editorContent = selectedStage.instructionsMd;
         }
     });
+    let creatingStage = $state(false);
 </script>
 
 <svelte:head>
@@ -35,7 +36,7 @@
 <div class="h-screen flex flex-col bg-background">
     <!-- Header -->
     <header
-        class="border-b border-border bg-card px-4 py-3 flex items-center justify-between flex-shrink-0"
+        class="border-b border-border bg-card px-4 py-2 flex items-center justify-between shrink-0"
     >
         <div class="flex items-center gap-4">
             <a
@@ -61,12 +62,7 @@
                     {data.challenge.title}
                 </h1>
                 <div class="flex items-center gap-2 mt-0.5">
-                    <Badge
-                        variant={data.challenge.isPublished
-                            ? "default"
-                            : "intermediate"}
-                        size="sm"
-                    >
+                    <Badge variant={"default"} size="sm" className="text-xs">
                         {data.challenge.isPublished ? "Published" : "Draft"}
                     </Badge>
                     <span class="text-xs text-muted-foreground capitalize"
@@ -79,7 +75,10 @@
         <div class="flex items-center gap-3">
             {#if data.challenge.isPublished}
                 <form method="POST" action="?/unpublish" use:enhance>
-                    <button type="submit" class="btn-secondary text-sm">
+                    <button
+                        type="submit"
+                        class="bg-secondary px-2 py-1 rounded-full text-muted-foreground text-xs border border-border hover:text-primary"
+                    >
                         Unpublish
                     </button>
                 </form>
@@ -87,9 +86,9 @@
                 <form method="POST" action="?/publish" use:enhance>
                     <button
                         type="submit"
-                        disabled={true || data.isCreator}
-                        class="btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        title={true || data.isCreator
+                        disabled={!data.isCreator}
+                        class="btn-primary text-sm"
+                        title={!data.isCreator
                             ? "Creator subscription required"
                             : ""}
                     >
@@ -111,12 +110,26 @@
         >
             <div class="p-4 border-b border-border">
                 <h2 class="font-medium text-foreground mb-2">Stages</h2>
-                <form method="POST" action="?/addStage" use:enhance>
+                <form
+                    method="POST"
+                    action="?/addStage"
+                    use:enhance={() => {
+                        creatingStage = true;
+                        return async ({ update }) => {
+                            await update();
+                            creatingStage = false;
+                        };
+                    }}
+                >
                     <button
+                        disabled={creatingStage}
                         type="submit"
-                        class="w-full btn-secondary text-sm py-2"
-                    >
-                        + Add Stage
+                        class="w-full bg-secondary rounded-xl text-primary text-sm py-2"
+                        >{#if creatingStage}
+                            Adding...
+                        {:else}
+                            + Add Stage
+                        {/if}
                     </button>
                 </form>
             </div>
@@ -261,14 +274,217 @@
                     </SplitPane>
                 </div>
 
-                <!-- Test script section -->
+                <!-- Test/Settings Section -->
                 <div class="border-t border-border bg-card p-4 flex-shrink-0">
-                    <details>
-                        <summary
-                            class="cursor-pointer font-medium text-foreground mb-2"
+                    {#if data.challenge.testRunnerType === "CSS"}
+                        <!-- CSS Battle Settings -->
+                        <h3 class="font-medium text-foreground mb-4">
+                            CSS Battle Settings
+                        </h3>
+
+                        <form
+                            method="POST"
+                            action="?/updateStage"
+                            use:enhance
+                            class="space-y-4"
                         >
-                            Test Script
-                        </summary>
+                            <input
+                                type="hidden"
+                                name="stageId"
+                                value={selectedStage.id}
+                            />
+
+                            <div>
+                                <label
+                                    for="targetImageUrl"
+                                    class="block text-sm font-medium text-muted-foreground mb-1"
+                                >
+                                    Target Image URL
+                                </label>
+                                <input
+                                    type="url"
+                                    id="targetImageUrl"
+                                    name="targetImageUrl"
+                                    class="input-field w-full"
+                                    placeholder="https://example.com/target.png"
+                                    value={selectedStage.targetImageUrl || ""}
+                                />
+                                <p class="text-xs text-muted-foreground mt-1">
+                                    URL to the target image users need to
+                                    recreate
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label
+                                        for="canvasWidth"
+                                        class="block text-sm font-medium text-muted-foreground mb-1"
+                                    >
+                                        Canvas Width
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="canvasWidth"
+                                        name="canvasWidth"
+                                        class="input-field w-full text-center"
+                                        value={selectedStage.canvasWidth || 400}
+                                        min="100"
+                                        max="800"
+                                    />
+                                </div>
+                                <div>
+                                    <label
+                                        for="canvasHeight"
+                                        class="block text-sm font-medium text-muted-foreground mb-1"
+                                    >
+                                        Canvas Height
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="canvasHeight"
+                                        name="canvasHeight"
+                                        class="input-field w-full text-center"
+                                        value={selectedStage.canvasHeight ||
+                                            300}
+                                        min="100"
+                                        max="800"
+                                    />
+                                </div>
+                                <div>
+                                    <label
+                                        for="matchThreshold"
+                                        class="block text-sm font-medium text-muted-foreground mb-1"
+                                    >
+                                        Match Threshold %
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="matchThreshold"
+                                        name="matchThreshold"
+                                        class="input-field w-full text-center"
+                                        value={selectedStage.matchThreshold ||
+                                            95}
+                                        min="50"
+                                        max="100"
+                                        step="0.5"
+                                    />
+                                </div>
+                            </div>
+
+                            {#if selectedStage.targetImageUrl}
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-muted-foreground mb-2"
+                                        >Preview</label
+                                    >
+                                    <img
+                                        src={selectedStage.targetImageUrl}
+                                        alt="Target Preview"
+                                        class="border border-border rounded-lg max-w-[200px] max-h-[150px] object-contain"
+                                    />
+                                </div>
+                            {/if}
+
+                            <div class="flex justify-end pt-2">
+                                <button
+                                    type="submit"
+                                    class="btn-primary text-sm"
+                                >
+                                    Save CSS Settings
+                                </button>
+                            </div>
+                        </form>
+                    {:else}
+                        <!-- Standard Test Script (Bash) -->
+                        <h3 class="font-medium text-foreground mb-4">
+                            Test Script (Bash)
+                        </h3>
+
+                        <div class="mb-4 flex gap-2 overflow-x-auto pb-2">
+                            <button
+                                type="button"
+                                class="btn-secondary text-xs whitespace-nowrap"
+                                onclick={() => {
+                                    const template = `#!/bin/bash
+# Check if a file exists
+if [ ! -f "main.c" ]; then
+    echo "Error: main.c not found"
+    exit 1
+fi
+echo "main.c found"`;
+                                    const textarea = document.querySelector(
+                                        'textarea[name="testScript"]',
+                                    ) as HTMLTextAreaElement | null;
+                                    if (textarea) {
+                                        textarea.value = template;
+                                        textarea.dispatchEvent(
+                                            new Event("input"),
+                                        );
+                                    }
+                                }}
+                            >
+                                Template: File Exists
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-secondary text-xs whitespace-nowrap"
+                                onclick={() => {
+                                    const template = `#!/bin/bash
+# Compile and run
+gcc main.c -o main
+if [ $? -ne 0 ]; then
+    echo "Compilation failed"
+    exit 1
+fi
+
+output=$(./main)
+expected="Hello World"
+
+if [ "$output" != "$expected" ]; then
+    echo "Expected '$expected', got '$output'"
+    exit 1
+fi
+echo "Test passed"`;
+                                    const textarea = document.querySelector(
+                                        'textarea[name="testScript"]',
+                                    ) as HTMLTextAreaElement | null;
+                                    if (textarea) {
+                                        textarea.value = template;
+                                        textarea.dispatchEvent(
+                                            new Event("input"),
+                                        );
+                                    }
+                                }}
+                            >
+                                Template: Compile & Run
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-secondary text-xs whitespace-nowrap"
+                                onclick={() => {
+                                    const template = `#!/bin/bash
+# Python Script Check
+if ! python3 -c "import main" 2>/dev/null; then
+   echo "Failed to import main.py"
+   exit 1
+fi
+echo "Module valid"`;
+                                    const textarea = document.querySelector(
+                                        'textarea[name="testScript"]',
+                                    ) as HTMLTextAreaElement | null;
+                                    if (textarea) {
+                                        textarea.value = template;
+                                        textarea.dispatchEvent(
+                                            new Event("input"),
+                                        );
+                                    }
+                                }}
+                            >
+                                Template: Python Check
+                            </button>
+                        </div>
+
                         <form method="POST" action="?/updateStage" use:enhance>
                             <input
                                 type="hidden"
@@ -277,12 +493,19 @@
                             />
                             <textarea
                                 name="testScript"
-                                rows="6"
-                                class="w-full input-field font-mono text-sm resize-none"
+                                rows="12"
+                                class="w-full input-field font-mono text-sm resize-none mb-2"
                                 placeholder="#!/bin/bash&#10;# Test script for this stage..."
-                                >{selectedStage.testScript || ""}</textarea
-                            >
-                            <div class="mt-2 flex justify-end">
+                                value={selectedStage.testScript || ""}
+                                oninput={(e) => {
+                                    // Update the bound value manually if needed or rely on form
+                                }}
+                            ></textarea>
+
+                            <div class="flex justify-between items-center">
+                                <p class="text-xs text-muted-foreground">
+                                    This script will run on the user's machine.
+                                </p>
                                 <button
                                     type="submit"
                                     class="btn-secondary text-sm"
@@ -291,7 +514,7 @@
                                 </button>
                             </div>
                         </form>
-                    </details>
+                    {/if}
                 </div>
             </div>
         {:else}

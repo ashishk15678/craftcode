@@ -1,72 +1,77 @@
-import * as p from '@clack/prompts';
-import pc from 'picocolors';
-import { saveConfig, loadConfig, clearConfig, isAuthenticated } from '../utils/config.js';
-import { apiRequest } from '../utils/api.js';
+import * as p from "@clack/prompts";
+import pc from "picocolors";
+import { saveConfig, loadConfig, clearConfig, isAuthenticated, } from "../utils/config.js";
+import { apiRequest } from "../utils/api.js";
 export async function login() {
-    p.intro(pc.bgCyan(pc.black(' CraftCode Login ')));
+    p.intro(pc.bgCyan(pc.black(" CraftCode Login ")));
     if (isAuthenticated()) {
         const config = loadConfig();
         const shouldLogout = await p.confirm({
-            message: `Already logged in as ${config.user?.email}. Log out?`
+            message: `Already logged in as ${config.user?.email}. Log out?`,
         });
         if (p.isCancel(shouldLogout)) {
-            p.cancel('Cancelled');
+            p.cancel("Cancelled");
             process.exit(0);
         }
         if (shouldLogout) {
             clearConfig();
-            p.log.success('Logged out successfully');
+            p.log.success("Logged out successfully");
         }
         return;
     }
     // For now, we use a simple flow where user logs in via browser
     // and enters a token. A more advanced flow would open browser and use OAuth.
-    p.log.info('To log in, you need to generate a CLI token from the website.');
-    p.log.info(`Visit: ${pc.cyan(loadConfig().apiUrl + '/profile/tokens')}`);
-    p.log.info('');
+    p.log.info("To log in, you need to generate a CLI token from the website.");
+    p.log.info(`Visit: ${pc.cyan(loadConfig().apiUrl + "/profile/tokens")}`);
+    p.log.info("");
     const token = await p.text({
-        message: 'Enter your CLI token:',
-        placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+        message: "Enter your CLI token:",
+        placeholder: "cc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         validate: (value) => {
             if (!value || value.length < 10) {
-                return 'Please enter a valid token';
+                return "Please enter a valid token";
             }
-        }
+        },
     });
     if (p.isCancel(token)) {
-        p.cancel('Cancelled');
+        p.cancel("Cancelled");
         process.exit(0);
     }
     const spinner = p.spinner();
-    spinner.start('Verifying token...');
+    spinner.start("Verifying token...");
     // Save token temporarily to make the API request
     const config = loadConfig();
     config.token = token;
     saveConfig(config);
-    // Verify by making a request
-    const response = await apiRequest('/api/cli/stage');
+    // Verify by making a GET request to /api/cli/auth
+    const response = await apiRequest("/api/cli/auth");
     if (!response.ok) {
         clearConfig();
-        spinner.stop('Token verification failed');
-        p.log.error(response.error || 'Invalid token');
+        spinner.stop("Token verification failed");
+        p.log.error(response.error || "Invalid token");
         process.exit(1);
     }
-    spinner.stop('Token verified!');
-    p.log.success('Successfully logged in!');
-    p.outro('Run `craftcode test` to start testing your code.');
+    // Store user information
+    if (response.data?.user) {
+        config.user = response.data.user;
+        saveConfig(config);
+    }
+    spinner.stop("Token verified!");
+    p.log.success("Successfully logged in!");
+    p.outro("Run `craftcode test` to start testing your code.");
 }
 export async function logout() {
     if (!isAuthenticated()) {
-        p.log.warning('Not logged in');
+        p.log.warning("Not logged in");
         return;
     }
     clearConfig();
-    p.log.success('Logged out successfully');
+    p.log.success("Logged out successfully");
 }
 export async function whoami() {
     const config = loadConfig();
     if (!config.token) {
-        p.log.warning('Not logged in. Run `craftcode login` to authenticate.');
+        p.log.warning("Not logged in. Run `craftcode login` to authenticate.");
         return;
     }
     if (config.user) {
@@ -74,15 +79,22 @@ export async function whoami() {
         if (config.user.name) {
             p.log.info(`Name: ${config.user.name}`);
         }
+        p.log.info(`User ID: ${pc.dim(config.user.id)}`);
     }
     else {
-        p.log.info('Logged in (checking status...)');
-        const response = await apiRequest('/api/cli/stage');
+        p.log.info("Logged in (verifying session...)");
+        const response = await apiRequest("/api/cli/auth");
         if (!response.ok) {
-            p.log.warning('Session may have expired. Run `craftcode login` to re-authenticate.');
+            p.log.warning("Session may have expired. Run `craftcode login` to re-authenticate.");
         }
-        else {
-            p.log.success('Session is valid');
+        else if (response.data?.user) {
+            // Update config with user info
+            config.user = response.data.user;
+            saveConfig(config);
+            p.log.info(`Logged in as: ${pc.cyan(response.data.user.email)}`);
+            if (response.data.user.name) {
+                p.log.info(`Name: ${response.data.user.name}`);
+            }
         }
     }
 }

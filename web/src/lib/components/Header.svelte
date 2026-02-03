@@ -37,17 +37,17 @@
 <header
     class="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl"
 >
-    <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <nav class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
             <!-- Logo -->
             <a href="/" class="flex items-center gap-2 group">
                 <div class="relative w-8 h-8">
                     <!-- Animated logo glow -->
                     <div
-                        class="absolute inset-0 rounded-lg bg-gradient-to-br from-primary to-secondary blur-sm transition-opacity"
-                    />
+                        class="absolute inset-0 rounded-lg bg-linear-to-br from-primary to-secondary blur-sm transition-opacity"
+                    ></div>
                     <div
-                        class="relative w-full h-full rounded-lg bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center"
+                        class="relative w-full h-full rounded-lg bg-linear-to-br from-primary to-blue-500 flex items-center justify-center"
                     >
                         <span class="text-primary font-bold text-sm">CC</span>
                     </div>
@@ -116,7 +116,7 @@
                                 class="fixed inset-0 z-40"
                                 onclick={closeUserMenu}
                                 aria-label="Close menu"
-                            />
+                            ></button>
                             <div
                                 class="absolute right-0 mt-1 w-48 rounded-lg border border-border bg-card shadow-xl z-50"
                             >
@@ -141,9 +141,10 @@
                                     <button
                                         type="button"
                                         onclick={async () => {
-                                            const { authClient } = await import('$lib/auth-client');
+                                            const { authClient } =
+                                                await import("$lib/auth-client");
                                             await authClient.signOut();
-                                            window.location.href = '/';
+                                            window.location.href = "/";
                                         }}
                                         class="w-full text-left px-3 py-1 rounded-md text-sm text-destructive hover:bg-secondary transition-colors"
                                     >

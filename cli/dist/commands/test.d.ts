@@ -1,3 +1,6 @@
-export declare function test(options: {
+interface TestOptions {
     challenge?: string;
-}): Promise<void>;
+    verbose?: boolean;
+}
+export declare function test(options: TestOptions): Promise<void>;
+export {};

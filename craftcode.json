@@ -1,0 +1,50 @@
+{
+  "$schema": "https://craftcode.dev/schemas/v1/config.json",
+  "version": "1.0",
+  "challenge": {
+    "id": "cml6i0elj0001sepbuozyz7by",
+    "slug": "make-a-simple-http-server-using-express-js",
+    "title": "Make a simple HTTP server using Express JS",
+    "lessonId": "cml6j1agm0001si8le7imbpba",
+    "lessonOrder": 2,
+    "lessonTitle": "Stage 2"
+  },
+  "environment": {
+    "type": "c",
+    "version": "c17",
+    "compiler": "gcc",
+    "compilerFlags": [
+      "-Wall",
+      "-Wextra",
+      "-O2",
+      "-std=c17"
+    ],
+    "linkerFlags": [],
+    "sourceFiles": [
+      "*.c"
+    ],
+    "headerFiles": [
+      "*.h"
+    ],
+    "outputBinary": "./solution"
+  },
+  "build": {
+    "command": "gcc -Wall -Wextra -O2 -std=c17 *.c  -o ./solution",
+    "timeout": 30000
+  },
+  "testing": {
+    "serverUrl": "http://localhost:5173",
+    "testEndpoint": "/api/cli/tests/cml6j1agm0001si8le7imbpba",
+    "resultEndpoint": "/api/cli/result",
+    "timeout": 10000,
+    "stopOnFirstFailure": true
+  },
+  "scaffold": {
+    "files": [
+      {
+        "path": "main.c",
+        "content": "#include <stdio.h>\n\nint main(int argc, char *argv[]) {\n    // Your solution here\n    printf(\"Hello, CraftCode!\\n\");\n    return 0;\n}\n"
+      }
+    ]
+  }
+}

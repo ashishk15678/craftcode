@@ -1,9 +1,7 @@
 <script lang="ts">
     import GridBackground from "$lib/components/ui/GridBackground.svelte";
     import ChallengeCard from "$lib/components/ChallengeCard.svelte";
-    import type { PageData } from "./$types";
-
-    let { data } = $props<{ data: PageData }>();
+    let { data } = $props<{ data }>();
 
     let searchQuery = $state("");
     let selectedDifficulty = $state<string | null>(null);
@@ -84,7 +82,7 @@
                     <button
                         class="px-4 py-1 rounded-xl text-sm font-medium transition-colors
               {selectedDifficulty === null
-                            ? 'bg-primary text-primary-foreground'
+                            ? 'text-primary border border-border shadow-xl'
                             : 'bg-secondary text-muted-foreground hover:text-foreground'}"
                         onclick={() => (selectedDifficulty = null)}
                     >
@@ -94,7 +92,7 @@
                         <button
                             class="px-4 py-1 rounded-xl text-sm font-medium capitalize transition-colors
                 {selectedDifficulty === difficulty
-                                ? 'bg-primary text-primary-foreground'
+                                ? ' text-primary border border-border shadow-xl'
                                 : 'bg-secondary text-muted-foreground hover:text-foreground'}"
                             onclick={() => (selectedDifficulty = difficulty)}
                         >
@@ -107,7 +105,7 @@
             <!-- Challenge Grid -->
             {#if filteredChallenges.length > 0}
                 <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6"
                 >
                     {#each filteredChallenges as challenge (challenge.id)}
                         <ChallengeCard

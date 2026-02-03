@@ -32,6 +32,7 @@ export default {
         glow: "glow 2s ease-in-out infinite alternate",
         "grid-fade": "grid-fade 8s ease-in-out infinite",
         float: "float 6s ease-in-out infinite",
+        shake: "shake 0.5s ease-in-out infinite",
       },
       keyframes: {
         beam: {
@@ -49,6 +50,10 @@ export default {
         float: {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-20px)" },
+        },
+        shake: {
+          "0%, 100%": { transform: "rotate(-20deg)" },
+          "50%": { transform: "rotate(20deg)" },
         },
       },
       boxShadow: {

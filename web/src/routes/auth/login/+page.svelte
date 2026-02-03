@@ -14,21 +14,27 @@
         loading = true;
         error = "";
 
-        await authClient.signIn.email({
-            email,
-            password
-        }, {
-            onRequest: () => {
-                loading = true;
+        await authClient.signIn.email(
+            {
+                email,
+                password,
             },
-            onSuccess: () => {
-                goto("/challenges");
+            {
+                onRequest: () => {
+                    loading = true;
+                },
+                onSuccess: () => {
+                    goto("/challenges", {
+                        invalidateAll: true,
+                    });
+                },
+
+                onError: (ctx) => {
+                    error = ctx.error.message;
+                    loading = false;
+                },
             },
-            onError: (ctx) => {
-                error = ctx.error.message;
-                loading = false;
-            }
-        });
+        );
     }
 </script>
 
@@ -45,8 +51,7 @@
                 <div class="text-center mb-8">
                     <div
                         class="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center mx-auto mb-2"
-                    >
-                    </div>
+                    ></div>
                     <h1 class="text-lg font-bold text-foreground">
                         Welcome back
                     </h1>
