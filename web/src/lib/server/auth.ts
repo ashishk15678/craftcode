@@ -26,6 +26,7 @@ export const auth = betterAuth({
     additionalFields: {
       polarCustomerId: { type: "string" },
       isCreator: { type: "boolean" },
+      onboardingCompleted: { type: "boolean" },
     },
   },
   plugins: [

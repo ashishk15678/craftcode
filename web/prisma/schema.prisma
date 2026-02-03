@@ -25,6 +25,7 @@ model User {
   password        String? // Made optional for OAuth users
   polarCustomerId String?
   isCreator       Boolean @default(false)
+  onboardingCompleted Boolean @default(false)
 
   courses      Course[]
   progress     UserProgress[]

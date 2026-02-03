@@ -1,9 +1,19 @@
 <script lang="ts">
     import "../app.css";
     import Header from "$lib/components/Header.svelte";
+    import Onboarding from "$lib/components/Onboarding.svelte";
     import type { LayoutData } from "./$types";
     let { data, children } = $props<{ data: LayoutData; children: any }>();
+    
+    // Show onboarding only if user is logged in and hasn't completed it
+    let showOnboarding = $derived(
+        data.user && !data.user.onboardingCompleted
+    );
 </script>
+
+{#if showOnboarding && data.user}
+    <Onboarding user={data.user} />
+{/if}
 
 <div class="min-h-screen bg-background">
     <Header user={data.user} />

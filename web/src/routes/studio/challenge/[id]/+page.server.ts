@@ -152,12 +152,60 @@ export const actions: Actions = {
       return fail(403, { error: "Creator subscription required to publish" });
     }
 
+    // Fetch challenge with lessons for validation
+    const challenge = await db.course.findUnique({
+      where: { id: params.id },
+      include: {
+        lessons: {
+          orderBy: { order: "asc" },
+          include: {
+            testCases: true,
+          },
+        },
+      },
+    });
+
+    if (!challenge) {
+      return fail(404, { error: "Challenge not found" });
+    }
+
+    // Import and run validation
+    const { validateChallenge } = await import("$lib/server/lesson-validator");
+    
+    const validation = validateChallenge({
+      id: challenge.id,
+      title: challenge.title,
+      testRunnerType: challenge.testRunnerType,
+      lessons: challenge.lessons.map((l) => ({
+        id: l.id,
+        order: l.order,
+        title: l.title,
+        instructionsMd: l.instructionsMd,
+        testScript: l.testScript,
+        testScriptUrl: l.testScriptUrl,
+        targetImageUrl: l.targetImageUrl,
+        testCases: l.testCases,
+      })),
+    });
+
+    if (!validation.valid) {
+      return fail(400, {
+        error: "Validation failed. Please fix the following issues:",
+        validationErrors: validation.errors,
+        validationWarnings: validation.warnings,
+      });
+    }
+
     await db.course.update({
       where: { id: params.id },
       data: { isPublished: true },
     });
 
-    return { success: true, published: true };
+    return { 
+      success: true, 
+      published: true,
+      warnings: validation.warnings.length > 0 ? validation.warnings : undefined,
+    };
   },
 
   unpublish: async ({ params, locals }) => {
