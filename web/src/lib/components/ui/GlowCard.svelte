@@ -4,16 +4,9 @@
     interface Props {
         children: Snippet;
         className?: string;
-        gradientSize?: number;
-        gradientColor?: string;
     }
 
-    let {
-        children,
-        className = "",
-        gradientSize = 200,
-        gradientColor = "rgba(139, 92, 246, 0.15)",
-    }: Props = $props();
+    let { children, className = "" }: Props = $props();
 
     let card: HTMLDivElement;
 </script>

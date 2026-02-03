@@ -7,15 +7,15 @@
     let { data, children } = $props<{ data: LayoutData; children: any }>();
 </script>
 
-<div class="min-h-screen bg-background">
+<div class="min-h-screen">
     <Header user={data.user} />
 
-    <main class="pt-16">
+    <main class="pt-16 max-w-4xl mx-auto">
         {@render children()}
     </main>
 
     <footer class="border-t rounded-t-4xl border-border bg-card mt-20">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div class="md:col-span-2">
                     <div class="flex items-center gap-2 mb-4">

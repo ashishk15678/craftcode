@@ -1,8 +1,9 @@
 <script lang="ts">
-    import { onMount, onDestroy } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import { browser } from "$app/environment";
-    // Important: You will need to install this: npm install html2canvas
     import html2canvas from "html2canvas";
+    import { HugeiconsIcon } from "@hugeicons/svelte";
+    import { ArrowExpandIcon } from "@hugeicons/core-free-icons";
 
     // Props
     export let lessonId: string;
@@ -13,8 +14,16 @@
     export let matchThreshold: number = 95;
     export let onTestComplete: (result: any) => void = () => {};
 
+    const handleSave = (ev: KeyboardEvent) => {
+        if ((ev.ctrlKey || ev.metaKey) && (ev.key == "s" || ev.key == "S")) {
+            ev.stopPropagation();
+        }
+    };
+    onMount(() => window.addEventListener("keydown", () => handleSave));
+    onDestroy(() => window.removeEventListener("keydown", () => handleSave));
+
     // State
-    let editorMode: "html-css" | "react" = "react";
+    $: editorMode = "react";
     let comparisonMode: "side-by-side" | "slider" | "diff" = "side-by-side";
     let htmlCode = `<div class="box"></div>
 <style>
@@ -44,7 +53,7 @@
     let editorElement: HTMLElement;
     let editorView: any;
     let iframeSrc = "";
-    let matchPercentage = 0;
+    $: matchPercentage = 0;
     let sliderPosition = 50;
     let isRunning = false;
     let testResult: any = null;
@@ -87,6 +96,7 @@
         const { html } = await import("@codemirror/lang-html");
         const { javascript } = await import("@codemirror/lang-javascript");
         const { oneDark } = await import("@codemirror/theme-one-dark");
+
         const {
             syntaxHighlighting,
             defaultHighlightStyle,
@@ -118,7 +128,9 @@
                     else reactCode = newCode;
                 }
             }),
-            editorMode === "html-css" ? html() : javascript({ jsx: true }),
+            editorMode === "html-css"
+                ? html()
+                : javascript({ jsx: true, typescript: true }),
         ];
 
         editorView = new EditorView({
@@ -152,10 +164,9 @@
     }
 
     async function calculateMatch() {
-        if (!targetImageUrl || !previewIframe) return;
+        if (!targetImageUrl || !previewIframe || !browser) return;
 
         try {
-            // 1. Load Target Image
             const targetImg = new Image();
             targetImg.crossOrigin = "Anonymous";
             targetImg.src = targetImageUrl;
@@ -173,7 +184,6 @@
                 canvasHeight,
             ).data;
 
-            // 2. Capture Iframe Content using html2canvas
             const iframeBody = previewIframe.contentDocument?.body;
             if (!iframeBody) return;
 
@@ -181,56 +191,36 @@
                 width: canvasWidth,
                 height: canvasHeight,
                 scale: 1,
-                logging: false,
                 useCORS: true,
+                logging: false,
             });
 
             const userData = userCanvas
                 .getContext("2d")!
                 .getImageData(0, 0, canvasWidth, canvasHeight).data;
 
-            // 3. Pixel Comparison & Diff Generation
+            // 3. Compare Pixels
             let diffScore = 0;
             const maxDiff = canvasWidth * canvasHeight * 4 * 255;
 
-            if (diffCanvas) {
-                diffCanvas.width = canvasWidth;
-                diffCanvas.height = canvasHeight;
-                const dCtx = diffCanvas.getContext("2d")!;
-                const diffImg = dCtx.createImageData(canvasWidth, canvasHeight);
-
-                for (let i = 0; i < targetData.length; i += 4) {
-                    const rD = Math.abs(targetData[i] - userData[i]);
-                    const gD = Math.abs(targetData[i + 1] - userData[i + 1]);
-                    const bD = Math.abs(targetData[i + 2] - userData[i + 2]);
-                    const aD = Math.abs(targetData[i + 3] - userData[i + 3]);
-
-                    diffScore += rD + gD + bD + aD;
-
-                    // Highlight diffs in magenta, matches in black
-                    const isDiff = rD + gD + bD > 10;
-                    diffImg.data[i] = isDiff ? 255 : 0;
-                    diffImg.data[i + 1] = 0;
-                    diffImg.data[i + 2] = isDiff ? 255 : 0;
-                    diffImg.data[i + 3] = 255;
-                }
-                dCtx.putImageData(diffImg, 0, 0);
+            for (let i = 0; i < targetData.length; i += 4) {
+                // Compare RGBA channels
+                diffScore += Math.abs(targetData[i] - userData[i]); // R
+                diffScore += Math.abs(targetData[i + 1] - userData[i + 1]); // G
+                diffScore += Math.abs(targetData[i + 2] - userData[i + 2]); // B
+                diffScore += Math.abs(targetData[i + 3] - userData[i + 3]); // A
             }
 
+            // Update the state
             matchPercentage = Math.max(0, 100 - (diffScore / maxDiff) * 100);
         } catch (err) {
-            console.error("Match error:", err);
+            console.error("Comparison failed:", err);
         }
     }
 
     async function submitSolution() {
-        isRunning = true;
-        showOutput = true;
-        // Mock API call or actual backend call
-        setTimeout(() => {
-            isRunning = false;
-            testResult = { success: matchPercentage >= matchThreshold };
-        }, 1000);
+        calculateMatch();
+        console.log({ matchPercentage });
     }
 
     function handleSliderDrag(e: MouseEvent) {
@@ -240,28 +230,61 @@
             Math.min(100, ((e.clientX - rect.left) / rect.width) * 100),
         );
     }
+
+    // full screen code
+    let isFullScreen = false;
+    let containerElement: HTMLElement; // Reference for the root div
+
+    async function toggleFullScreen() {
+        if (!browser) return;
+
+        if (!document.fullscreenElement) {
+            try {
+                await containerElement.requestFullscreen();
+                isFullScreen = true;
+            } catch (err) {
+                console.error(
+                    `Error attempting to enable full-screen mode: ${err.message}`,
+                );
+            }
+        } else {
+            document.exitFullscreen();
+            isFullScreen = false;
+        }
+    }
+
+    // Sync state if user presses 'Esc'
+    function handleFullscreenChange() {
+        isFullScreen = !!document.fullscreenElement;
+    }
 </script>
 
+<svelte:window on:fullscreenchange={handleFullscreenChange} />
 <div
-    class="css-battle-editor h-full flex flex-col bg-slate-900 text-white font-sans"
+    bind:this={containerElement}
+    class="h-full flex flex-col bg-secondary text-secondary font-sans transition-all {isFullScreen
+        ? 'fullscreen-active'
+        : ''}"
 >
     <div
-        class="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700"
+        class="flex items-center justify-between px-4 py-3 border-b border-border"
     >
         <div class="flex gap-2">
             <button
-                class="px-3 py-1 text-sm rounded {editorMode === 'html-css'
-                    ? 'bg-blue-600'
-                    : 'bg-slate-700'}"
+                class="px-6 py-1 text-sm text-primary rounded {editorMode ===
+                'html-css'
+                    ? 'bg-linear-to-b from-primary/70 via-primary/70   to-primary text-secondary font-bold'
+                    : 'bg-background'}"
                 on:click={() => {
                     editorMode = "html-css";
                     initEditor();
                 }}>HTML/CSS</button
             >
             <button
-                class="px-3 py-1 text-sm rounded {editorMode === 'react'
-                    ? 'bg-blue-600'
-                    : 'bg-slate-700'}"
+                class="px-6 py-1 text-sm text-primary rounded {editorMode ===
+                'react'
+                    ? 'bg-linear-to-b from-primary/70 via-primary/70   to-primary text-secondary font-bold'
+                    : 'bg-background'}"
                 on:click={() => {
                     editorMode = "react";
                     initEditor();
@@ -270,7 +293,21 @@
         </div>
 
         <div class="flex gap-4 items-center">
-            <div class="text-sm font-mono">
+            <div on:click={() => {}}>
+                <button
+                    on:click={toggleFullScreen}
+                    class="hover:bg-primary/10 p-1 rounded-md transition-colors"
+                    title={isFullScreen
+                        ? "Exit Fullscreen"
+                        : "Enter Fullscreen"}
+                >
+                    <HugeiconsIcon
+                        icon={ArrowExpandIcon}
+                        class="text-primary"
+                    />
+                </button>
+            </div>
+            <div class="text-sm font-mono text-primary">
                 Match: <span
                     class={matchPercentage >= matchThreshold
                         ? "text-green-400"
@@ -279,7 +316,7 @@
             </div>
             <button
                 on:click={submitSolution}
-                class="bg-green-600 hover:bg-green-500 px-6 py-1 rounded font-bold transition-all"
+                class="bg-green-600 hover:bg-green-500 px-6 py-0.5 rounded font-bold transition-all"
                 >SUBMIT</button
             >
         </div>
@@ -291,19 +328,19 @@
             bind:this={editorElement}
         ></div>
 
-        <div class="w-1/2 flex flex-col bg-slate-950 p-4 overflow-auto">
+        <div class="w-1/2 flex flex-col bg-secondary/20 p-4 overflow-auto">
             <div class="flex gap-2 mb-4">
                 <button
-                    class="text-xs px-2 py-1 rounded bg-slate-800"
+                    class="text-xs px-2 py-1 rounded bg-primary"
                     on:click={() => (comparisonMode = "side-by-side")}
                     >Side-by-Side</button
                 >
                 <button
-                    class="text-xs px-2 py-1 rounded bg-slate-800"
+                    class="text-xs px-2 py-1 rounded bg-primary"
                     on:click={() => (comparisonMode = "slider")}>Slider</button
                 >
                 <button
-                    class="text-xs px-2 py-1 rounded bg-slate-800"
+                    class="text-xs px-2 py-1 rounded bg-primary"
                     on:click={() => (comparisonMode = "diff")}>Diff View</button
                 >
             </div>

@@ -37,7 +37,7 @@
 <header
     class="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl"
 >
-    <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <nav class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
             <!-- Logo -->
             <a href="/" class="flex items-center gap-2 group">

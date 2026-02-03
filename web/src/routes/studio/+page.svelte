@@ -7,6 +7,8 @@
     let { data } = $props<{ data: PageData }>();
 
     let showNewChallengeModal = $state(false);
+
+    let searchQuery = $state("");
 </script>
 
 <svelte:head>
@@ -22,12 +24,13 @@
             <div
                 class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
             >
-                <div>
-                    <h1 class="text-2xl sm:text-2xl font-bold text-foreground">
-                        Creator Studio
+                <div class=" mb-12">
+                    <h1 class="text-2 xl font-bold text-foreground mb-2">
+                        Create Challenges
                     </h1>
-                    <p class="text-muted-foreground">
-                        Create and manage your coding challenges
+                    <p class="text-muted-foreground text-sm max-w-2xl">
+                        Create a project and help others grow their coding
+                        skills.
                     </p>
                 </div>
 
@@ -35,7 +38,7 @@
                     {#if data.isCreator}
                         <button
                             onclick={() => (showNewChallengeModal = true)}
-                            class="bg-linear-to-b from-primary/80 via-primary/80 to-primary text-secondary px-6 py-1 rounded-full text-sm shadow-xl flex items-center justify-center outline-2 outline-offset-4 outline-border"
+                            class="bg-linear-to-b from-primary/80 via-primary/80 to-primary text-primary-foreground px-6 py-1 rounded-full text-sm shadow-xl flex items-center justify-center outline-2 outline-offset-4 outline-border"
                         >
                             <svg
                                 class="w-4 h-4 mr-2 inline"
@@ -105,103 +108,124 @@
                     </GlowCard>
                 </div>
             {/if}
-
-            <!-- Challenges Grid -->
-            {#if data.challenges.length > 0}
-                <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                    {#each data.challenges as challenge (challenge.id)}
-                        <a
-                            href="/studio/challenge/{challenge.id}"
-                            class="block group"
+            {#if data.isCreator}
+                <div class="flex mb-8">
+                    <div class="relative flex-1">
+                        <svg
+                            class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                         >
-                            <GlowCard className="h-full">
-                                <div class="px-6 py-4">
-                                    <div
-                                        class="flex items-start justify-between"
-                                    >
-                                        <h3
-                                            class="font-semibold text-lg text-foreground group-hover:text-primary transition-colors"
-                                        >
-                                            {challenge.title}
-                                        </h3>
-                                        <Badge
-                                            variant={challenge.isPublished
-                                                ? "default"
-                                                : "intermediate"}
-                                            size="sm"
-                                        >
-                                            {challenge.isPublished
-                                                ? "Published"
-                                                : "Draft"}
-                                        </Badge>
-                                    </div>
-
-                                    <p
-                                        class="text-muted-foreground text-sm line-clamp-2 mb-4"
-                                    >
-                                        {challenge.description}
-                                    </p>
-
-                                    <div
-                                        class="flex items-center justify-between text-sm text-muted-foreground px-2 py-1 rounded-xl"
-                                    >
-                                        <span
-                                            >{challenge.stageCount} stages</span
-                                        >
-                                        <span
-                                            >Updated {new Date(
-                                                challenge.updatedAt,
-                                            ).toLocaleDateString()}</span
-                                        >
-                                    </div>
-                                </div>
-                            </GlowCard>
-                        </a>
-                    {/each}
-                </div>
-            {:else if data.isCreator}
-                <GlowCard
-                    className="w-full flex items-center justify-center py-1 bg-secondary"
-                >
-                    <div
-                        class="p-12 max-w-md px-12 bg-card border border-border rounded-2xl"
-                    >
-                        <div
-                            class="w-11 h-11 border border-border rounded-full bg-secondary flex items-center justify-center mx-auto mb-4"
-                        >
-                            <svg
-                                class="w-8 h-8 text-muted-foreground"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                />
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-semibold text-foreground">
-                            Create your first challenge
-                        </h3>
-                        <p class="text-muted-foreground mb-6">
-                            Get started by creating a new coding challenge. New
-                            challenges with new levels.
-                        </p>
-                        <button
-                            onclick={() => (showNewChallengeModal = true)}
-                            class="bg-linear-to-b from-primary/80 w-full via-primary/80 hover:via-primary/80 transition-colors duration-200 to-primary text-secondary px-6 py-1 rounded-3xl"
-                        >
-                            Create Challenge
-                        </button>
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            />
+                        </svg>
+                        <input
+                            type="text"
+                            placeholder="Search challenges..."
+                            bind:value={searchQuery}
+                            class="input-field pl-12"
+                        />
                     </div>
-                </GlowCard>
+                </div>
             {/if}
         </div>
+
+        <!-- Challenges Grid -->
+        {#if data.challenges.length > 0}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                {#each data.challenges as challenge (challenge.id)}
+                    <a
+                        href="/studio/challenge/{challenge.id}"
+                        class="block group bg-secondary rounded-4xl p-2 border border-border"
+                    >
+                        <GlowCard className="h-full bg-secondary">
+                            <div class="px-6 py-4 bg-background">
+                                <div class="flex items-start justify-between">
+                                    <h3
+                                        class="font-semibold text-lg text-foreground group-hover:text-primary transition-colors"
+                                    >
+                                        {challenge.title}
+                                    </h3>
+                                    <Badge
+                                        variant={challenge.isPublished
+                                            ? "default"
+                                            : "intermediate"}
+                                        size="sm"
+                                    >
+                                        {challenge.isPublished
+                                            ? "Published"
+                                            : "Draft"}
+                                    </Badge>
+                                </div>
+
+                                <p
+                                    class="text-muted-foreground text-sm line-clamp-2 mb-4"
+                                >
+                                    {challenge.description}
+                                </p>
+                                <div
+                                    class="w-full h-0.5 my-2 bg-secondary"
+                                ></div>
+                                <div
+                                    class="flex items-center justify-between text-sm text-muted-foreground px-2 py-1 rounded-xl"
+                                >
+                                    <span>{challenge.stageCount} stages</span>
+                                    <span
+                                        >Updated {new Date(
+                                            challenge.updatedAt,
+                                        ).toLocaleDateString()}</span
+                                    >
+                                </div>
+                            </div>
+                        </GlowCard>
+                    </a>
+                {/each}
+            </div>
+        {:else if data.isCreator}
+            <GlowCard
+                className="w-full flex items-center justify-center py-1 bg-secondary"
+            >
+                <div
+                    class="p-12 max-w-md px-12 bg-card border border-border rounded-2xl"
+                >
+                    <div
+                        class="w-11 h-11 border border-border rounded-full bg-secondary flex items-center justify-center mx-auto mb-4"
+                    >
+                        <svg
+                            class="w-8 h-8 text-muted-foreground"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                            />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-foreground">
+                        Create your first challenge
+                    </h3>
+                    <p class="text-muted-foreground mb-6">
+                        Get started by creating a new coding challenge. New
+                        challenges with new levels.
+                    </p>
+                    <button
+                        onclick={() => (showNewChallengeModal = true)}
+                        class="bg-linear-to-b from-primary/80 w-full via-primary/80 hover:via-primary/80 transition-colors duration-200 to-primary text-secondary px-6 py-1 rounded-3xl"
+                    >
+                        Create Challenge
+                    </button>
+                </div>
+            </GlowCard>
+        {/if}
     </div>
 </div>
 

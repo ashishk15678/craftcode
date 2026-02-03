@@ -30,7 +30,6 @@
         advanced: "Advanced",
     };
 
-    // Check if this is a CSS challenge
     const isCSSChallenge = $derived(data.challenge.testRunnerType === "CSS");
 
     function handleTestComplete(result: any) {
@@ -47,10 +46,10 @@
     <meta name="description" content={data.challenge.description} />
 </svelte:head>
 
-<div class="relative min-h-screen">
+<div class="relative min-h-screen w-full">
     <GridBackground fadeEdges={true} animated={false} />
 
-    <div class="relative">
+    <div class="relative w-full">
         <!-- Hero -->
         <section class="px-4 sm:px-6 lg:px-8 py-12 border-b border-border">
             <div class="mx-auto max-w-7xl">
@@ -132,7 +131,9 @@
                     </div>
 
                     {#if !isCSSChallenge}
-                        <GlowCard className="w-full lg:w-80  shadow-xl">
+                        <GlowCard
+                            className="w-full lg:w-80  shadow-xl bg-gradient-to-b from-secondary/20 via-secondary to-primary/20"
+                        >
                             <div class="p-5">
                                 <h3 class="font-semibold text-foreground">
                                     Get Started
@@ -140,10 +141,8 @@
                                 <p class="text-sm text-muted-foreground mb-4">
                                     Install the CLI and run tests locally:
                                 </p>
-                                <div
-                                    class="bg-background rounded-lg font-mono text-sm"
-                                >
-                                    <CodeComp>
+                                <div class=" font-mono text-sm">
+                                    <CodeComp className="rounded-4xl p- 2">
                                         <div class="text-muted-foreground">
                                             # Install cli
                                         </div>
@@ -161,7 +160,9 @@
                             </div>
                         </GlowCard>
                     {:else}
-                        <GlowCard className="w-full lg:w-80 shadow-xl">
+                        <GlowCard
+                            className="w-full lg:w-80 shadow-xl bg-linear-to-b from-background via-background to-secondary"
+                        >
                             <div class="p-5">
                                 <h3 class="font-semibold text-foreground">
                                     CSS Battle
@@ -175,7 +176,7 @@
                                     <span class="text-muted-foreground"
                                         >Canvas:</span
                                     >
-                                    <span class="font-mono"
+                                    <span class="font-mono text-primary"
                                         >{selectedStage?.canvasWidth ||
                                             400}×{selectedStage?.canvasHeight ||
                                             300}</span
@@ -189,19 +190,28 @@
         </section>
 
         <!-- Content -->
-        <section class=" sm:px-6 py-8 w-full min-w-screen">
-            <div class="mx-auto">
-                <div class="flex flex-col lg:flex-row gap-8">
+        <section class=" sm:px-6 py-8 w-full">
+            <div class="mx-auto w-full">
+                <div class="flex flex-col h-full gap-8 w-full">
                     <!-- Stage sidebar -->
-                    <aside class="w-full lg:w-30 flex-shrink-0">
-                        <div class="sticky top-20">
+                    <aside
+                        class="w-full flex-shrink-0
+                             [&::-webkit-scrollbar]:h-1
+                             [&::-webkit-scrollbar-track]:bg-slate-100
+                             [&::-webkit-scrollbar-thumb]:bg-slate-300
+                             [&::-webkit-scrollbar-thumb]:rounded-full
+                             hover:[&::-webkit-scrollbar-thumb]:bg-slate-400"
+                    >
+                        <div class="sticky top-20 w-full">
                             <h2 class="font-semibold text-foreground mb-4">
                                 Stages
                             </h2>
-                            <div class="space-y-2">
+                            <div
+                                class="space-y-2 flex overflow-x-auto flex-1 w-full"
+                            >
                                 {#each data.stages as stage (stage.id)}
                                     <button
-                                        class="w-full text-left px-4 py-1 rounded-3xl transition-colors flex items-center gap-3
+                                        class="w-full text-left px-4 py-1 rounded-3xl transition-colors flex items-center gap-3 shrink-0 flex-1
                       {selectedStageId === stage.id
                                             ? 'bg-primary/10 border border-primary/20'
                                             : 'bg-card border border-border hover:border-primary/30'}"
@@ -251,7 +261,7 @@
                             {#if isCSSChallenge}
                                 <!-- CSS Battle Editor -->
                                 <div
-                                    class="h-[calc(100vh-200px)] rounded-lg overflow-hidden border border-border"
+                                    class="h-[calc(100vh-200px)] rounded-2xl overflow-hidden border border-border max-w-4xl"
                                 >
                                     <CSSBattleEditor
                                         lessonId={selectedStage.id}
@@ -306,10 +316,11 @@
                                                 {selectedStage.title}
                                             </h2>
                                         </div>
-
-                                        <MarkdownRenderer
-                                            content={renderedInstructions as string}
-                                        />
+                                        <div class="text-primary">
+                                            <MarkdownRenderer
+                                                content={renderedInstructions as string}
+                                            />
+                                        </div>
                                     </div>
                                 </GlowCard>
                             {/if}

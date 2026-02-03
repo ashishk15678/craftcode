@@ -3,12 +3,73 @@
 
 @layer base {
     .input-field {
-        @apply px-3 py-0.5 rounded-2xl ring ring-border;
+        @apply px-3 py-0.5 rounded-2xl ring ring-border text-primary;
+    }
+    .input-field::focus {
+        @apply bg-secondary text-primary;
     }
 }
 
 .animate-shake {
     animation: shake 0.5s ease-in-out infinite;
+}
+
+/* Add this to your globals.css */
+.paper-lift-card {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.paper-lift-card:hover {
+    /* We combine all movements into one transform string */
+    transform: translateY(-1rem) translateX(-1rem);
+
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
+    z-index: 10; /* Ensures the lifted card stays on top of neighbors */
+}
+
+/*grain filter */
+.grain-container {
+    position: relative;
+    overflow: hidden;
+    /* Ensure the background stays dark so the grain pops */
+    background-color: theme("colors.background");
+}
+
+.grain-container::before {
+    content: "";
+    position: absolute;
+    inset: 0; /* Covers 100% of the parent */
+
+    /* 1. The Base Glow: A soft radial center to keep the card from looking flat */
+    background: radial-gradient(
+        circle at 50% 50%,
+        rgba(255, 120, 0, 0.15) 20%,
+        transparent 80%
+    );
+
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-blend-mode: overlay;
+
+    /* 4. Fine-tuning */
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Ensure all text and buttons sit above the grain film */
+.grain-container > div {
+    position: relative;
+    z-index: 2;
+}
+body {
+    background: linear-gradient(
+        to bottom,
+        var(--color-background),
+        var(--color-background),
+        var(--color-secondary)
+    );
 }
 
 @keyframes shake {
@@ -48,30 +109,68 @@
     --radius: 0.5rem;
     --shadow-color: #000000;
 }
-
 .dark {
-    --background: oklch(0.129 0.042 264.695);
-    --foreground: oklch(0.984 0.003 247.858);
-    --card: oklch(0.129 0.042 264.695);
-    --card-foreground: oklch(0.984 0.003 247.858);
-    --popover: oklch(0.129 0.042 264.695);
-    --popover-foreground: oklch(0.984 0.003 247.858);
-    --primary: oklch(0.984 0.003 247.858);
-    --primary-foreground: oklch(0.208 0.042 265.755);
-    --secondary: oklch(0.279 0.041 260.031);
-    --secondary-foreground: oklch(0.984 0.003 247.858);
-    --muted: oklch(0.279 0.041 260.031);
-    --muted-foreground: oklch(0.704 0.04 256.788);
-    --accent: oklch(0.279 0.041 260.031);
-    --accent-foreground: oklch(0.984 0.003 247.858);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.984 0.003 247.858);
-    --border: oklch(0.279 0.041 260.031);
-    --input: oklch(0.279 0.041 260.031);
-    --ring: oklch(0.446 0.043 257.281);
-    --shadow-color: #ffffff;
+    --background: oklch(0.1448 0 0);
+    --foreground: oklch(0.9702 0 0);
+    --card: oklch(0.1822 0 0);
+    --card-foreground: oklch(0.9702 0 0);
+    --popover: oklch(0.1822 0 0);
+    --popover-foreground: oklch(0.9702 0 0);
+    --primary: oklch(0.6333 0.0309 154.9039);
+    --primary-foreground: oklch(0 0 0);
+    --secondary: oklch(0.2178 0 0);
+    --secondary-foreground: oklch(0.9702 0 0);
+    --muted: oklch(0.2178 0 0);
+    --muted-foreground: oklch(0.7058 0 0);
+    --accent: oklch(0.3709 0.0248 153.9823);
+    --accent-foreground: oklch(0.9702 0 0);
+    --destructive: oklch(0.6368 0.2078 25.3313);
+    --destructive-foreground: oklch(1 0 0);
+    --border: oklch(0.285 0 0);
+    --input: oklch(0.1822 0 0);
+    --ring: oklch(0.6333 0.0309 154.9039);
+    --chart-1: oklch(0.6333 0.0309 154.9039);
+    --chart-2: oklch(0.7209 0.0489 120.9474);
+    --chart-3: oklch(0.6744 0.0427 136.011);
+    --chart-4: oklch(0.551 0.0234 264.3637);
+    --chart-5: oklch(0.5096 0.0289 152.346);
+    --sidebar: oklch(0.1684 0 0);
+    --sidebar-foreground: oklch(0.9702 0 0);
+    --sidebar-primary: oklch(0.6333 0.0309 154.9039);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.2178 0 0);
+    --sidebar-accent-foreground: oklch(0.9702 0 0);
+    --sidebar-border: oklch(0.285 0 0);
+    --sidebar-ring: oklch(0.6333 0.0309 154.9039);
+    --font-sans: Antic, ui-sans-serif, sans-serif, system-ui;
+    --font-serif: Signifier, Georgia, serif;
+    --font-mono: JetBrains Mono, Courier New, monospace;
+    --radius: 0.35rem;
+    --shadow-x: 0px;
+    --shadow-y: 1px;
+    --shadow-blur: 2px;
+    --shadow-spread: 0px;
+    --shadow-opacity: 0.04;
+    --shadow-color: #000000;
+    --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.02);
+    --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.02);
+    --shadow-sm:
+        0px 1px 2px 0px hsl(0 0% 0% / 0.04),
+        0px 1px 2px -1px hsl(0 0% 0% / 0.04);
+    --shadow:
+        0px 1px 2px 0px hsl(0 0% 0% / 0.04),
+        0px 1px 2px -1px hsl(0 0% 0% / 0.04);
+    --shadow-md:
+        0px 1px 2px 0px hsl(0 0% 0% / 0.04),
+        0px 2px 4px -1px hsl(0 0% 0% / 0.04);
+    --shadow-lg:
+        0px 1px 2px 0px hsl(0 0% 0% / 0.04),
+        0px 4px 6px -1px hsl(0 0% 0% / 0.04);
+    --shadow-xl:
+        0px 1px 2px 0px hsl(0 0% 0% / 0.04),
+        0px 8px 10px -1px hsl(0 0% 0% / 0.04);
+    --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.1);
 }
-
 /* Catppuccin Mocha Theme (Dark) */
 .theme-catppuccin-mocha {
     --background: #1e1e2e;

@@ -8,10 +8,12 @@
     export let className: string = "";
 </script>
 
-<div class="group relative px-4 py-2 border border-border overflow-hidden">
-    <div class={"flex items-start font-thin gap-4 " + className}>
+<div class="group relative p-6 border border-border overflow-hidden">
+    <div
+        class={"flex items-center justify-start   font-thin gap-4 " + className}
+    >
         <div class="">
-            <HugeiconsIcon {icon} class="" />
+            <HugeiconsIcon {icon} class="" size={18} />
         </div>
         <div class="text-md line-clamp-1 font-thin">{label}</div>
     </div>

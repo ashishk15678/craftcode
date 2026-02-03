@@ -1,10 +1,18 @@
 import type { PageServerLoad } from "./$types";
-import { error } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
+import { goto } from "$app/navigation";
+import { HandleError } from "$lib/custom-error-handler";
 
 export const load: PageServerLoad = async ({ params, locals }) => {
   const userId = locals.user?.id;
-
+  const user = HandleError({
+    fn: await db.user.findFirstOrThrow,
+  }).run({
+    where: {
+      id: userId,
+    },
+  });
   const challenge = await db.course.findUnique({
     where: { slug: params.slug },
     include: {
@@ -32,6 +40,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
   if (!challenge) {
     throw error(404, "Challenge not found");
+  }
+
+  if (!userId) {
+    throw error(401, "User not logged in");
   }
 
   if (!challenge.isPublished && challenge.authorId !== userId) {
@@ -96,3 +108,5 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     completedLessonIds: Array.from(completedLessonIds),
   };
 };
+
+export let ssr = false;

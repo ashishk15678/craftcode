@@ -1,9 +1,7 @@
 <script lang="ts">
     import GridBackground from "$lib/components/ui/GridBackground.svelte";
     import ChallengeCard from "$lib/components/ChallengeCard.svelte";
-    import type { PageData } from "./$types";
-
-    let { data } = $props<{ data: PageData }>();
+    let { data } = $props<{ data }>();
 
     let searchQuery = $state("");
     let selectedDifficulty = $state<string | null>(null);
@@ -107,7 +105,7 @@
             <!-- Challenge Grid -->
             {#if filteredChallenges.length > 0}
                 <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6"
                 >
                     {#each filteredChallenges as challenge (challenge.id)}
                         <ChallengeCard

@@ -87,7 +87,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
         const existingProgress = await db.userProgress.findUnique({
           where: {
             userId_lessonId: {
-              userId: session.user.id,
+              userId: locals.user.id,
               lessonId
             }
           }
@@ -96,7 +96,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
         if (!existingProgress) {
           await db.userProgress.create({
             data: {
-              userId: session.user.id,
+              userId: locals.user.id,
               lessonId
             }
           });
@@ -109,7 +109,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 
         const completedLessons = await db.userProgress.count({
           where: {
-            userId: session.user.id,
+            userId: locals.user.id,
             lesson: { courseId: lesson.course.id }
           }
         });

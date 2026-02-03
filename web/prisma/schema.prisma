@@ -24,13 +24,13 @@ model User {
   // Custom fields
   password        String? // Made optional for OAuth users
   polarCustomerId String?
-  isCreator       Boolean  @default(false)
+  isCreator       Boolean @default(false)
 
-  courses         Course[]
-  progress        UserProgress[]
-  cliTokens       CliToken[]
-  achievements    UserAchievement[]
-  statistics      UserStatistics?
+  courses      Course[]
+  progress     UserProgress[]
+  cliTokens    CliToken[]
+  achievements UserAchievement[]
+  statistics   UserStatistics?
 
   @@map("user")
 }
@@ -81,19 +81,29 @@ model Verification {
 }
 
 enum CourseType {
-  CHALLENGE   // Multi-stage build projects (CodeCrafters-style)
-  TUTORIAL    // Step-by-step learning courses
+  CHALLENGE // Multi-stage build projects (CodeCrafters-style)
+  TUTORIAL // Step-by-step learning courses
   COMPETITIVE // Competitive programming problems
   CSS
 }
 
 enum TestRunnerType {
-  BASH        // Traditional bash script
-  NODE        // Node.js (Jest/Mocha)
-  PYTHON      // Python (pytest)
+  BASH // Traditional bash script
+  NODE // Node.js (Jest/Mocha)
+  PYTHON // Python (pytest)
   IO_MATCHING // Input/output matching for competitive programming
-  CUSTOM      // Custom test runner
+  CUSTOM // Custom test runner
   CSS
+}
+
+enum EnvironmentType {
+  C
+  CPP
+  NODE
+  PYTHON
+  RUST
+  GO
+  BASH
 }
 
 model Course {
@@ -102,7 +112,7 @@ model Course {
   slug           String         @unique
   description    String
   type           CourseType     @default(CHALLENGE)
-  difficulty     String         // "beginner" | "intermediate" | "advanced"
+  difficulty     String // "beginner" | "intermediate" | "advanced"
   testRunnerType TestRunnerType @default(BASH)
   iconUrl        String?
   coverUrl       String?
@@ -121,28 +131,61 @@ model Course {
 }
 
 model Lesson {
-  id             String         @id @default(cuid())
+  id             String   @id @default(cuid())
   order          Int
   title          String
-  instructionsMd String         @db.Text
-  testScriptUrl  String?        // URL to test script (can be null during creation)
-  testScript     String?        @db.Text // Inline script storage alternative
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  instructionsMd String   @db.Text
+  testScriptUrl  String? // URL to test script (can be null during creation)
+  testScript     String?  @db.Text // Inline script storage alternative
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // CSS Challenge specific fields
-  targetImageUrl String?        // URL to target image for CSS challenges
-  canvasWidth    Int            @default(400)
-  canvasHeight   Int            @default(300)
-  matchThreshold Float          @default(95.0)  // Percentage required to pass
+  targetImageUrl String? // URL to target image for CSS challenges
+  canvasWidth    Int     @default(400)
+  canvasHeight   Int     @default(300)
+  matchThreshold Float   @default(95.0) // Percentage required to pass
 
   courseId String
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-  progress UserProgress[]
+  progress  UserProgress[]
+  testCases TestCase[]
+
+  // Environment configuration for CLI testing
+  environmentType   EnvironmentType?
+  environmentConfig Json? // Full environment config as JSON
 
   @@unique([courseId, order])
   @@index([courseId])
+}
+
+model TestCase {
+  id       String @id @default(cuid())
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  order       Int // Test execution order
+  name        String // Display name: "Test 1: Basic PING"
+  description String? // What this test verifies
+
+  // Input/Output for I/O matching tests
+  input          String? @db.Text
+  expectedOutput String? @db.Text
+
+  // For script-based tests
+  testScript String? @db.Text
+
+  // Test configuration
+  timeout  Int     @default(5000) // milliseconds
+  isHidden Boolean @default(false) // Hidden tests don't show input/output on failure
+  weight   Int     @default(1) // For scoring
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([lessonId, order])
+  @@index([lessonId])
 }
 
 model UserProgress {
@@ -160,10 +203,10 @@ model UserProgress {
 }
 
 model CliToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  name      String?  // e.g., "MacBook Pro", "Work Laptop"
-  createdAt DateTime @default(now())
+  id        String    @id @default(cuid())
+  token     String    @unique
+  name      String? // e.g., "MacBook Pro", "Work Laptop"
+  createdAt DateTime  @default(now())
   expiresAt DateTime
   lastUsed  DateTime?
 
@@ -177,20 +220,20 @@ model CliToken {
 model Achievement {
   id          String   @id @default(cuid())
   key         String   @unique // e.g., "first_course", "streak_7", "complete_10"
-  name        String   // Display name
+  name        String // Display name
   description String
   iconUrl     String?
-  category    String   // "progress", "streak", "creator", "special"
-  threshold   Int?     // For numeric achievements (e.g., complete 10 courses)
+  category    String // "progress", "streak", "creator", "special"
+  threshold   Int? // For numeric achievements (e.g., complete 10 courses)
   createdAt   DateTime @default(now())
 
   userAchievements UserAchievement[]
 }
 
 model UserAchievement {
-  id          String   @id @default(cuid())
-  unlockedAt  DateTime @default(now())
-  progress    Int      @default(0) // For tracking progress toward achievement
+  id         String   @id @default(cuid())
+  unlockedAt DateTime @default(now())
+  progress   Int      @default(0) // For tracking progress toward achievement
 
   userId        String
   achievementId String
@@ -203,24 +246,24 @@ model UserAchievement {
 }
 
 model UserStatistics {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Course completion stats
-  totalCoursesCompleted     Int @default(0)
-  challengesCompleted       Int @default(0)
-  tutorialsCompleted        Int @default(0)
-  competitiveCompleted      Int @default(0)
+  totalCoursesCompleted Int @default(0)
+  challengesCompleted   Int @default(0)
+  tutorialsCompleted    Int @default(0)
+  competitiveCompleted  Int @default(0)
 
   // Streak tracking
-  currentStreak             Int      @default(0)
-  longestStreak             Int      @default(0)
-  lastActivityDate          DateTime?
+  currentStreak    Int       @default(0)
+  longestStreak    Int       @default(0)
+  lastActivityDate DateTime?
 
   // Creator stats
-  totalCoursesPublished     Int @default(0)
-  totalEnrollments          Int @default(0)
+  totalCoursesPublished Int @default(0)
+  totalEnrollments      Int @default(0)
 
   updatedAt DateTime @updatedAt
 

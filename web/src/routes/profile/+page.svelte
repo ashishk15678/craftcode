@@ -76,9 +76,9 @@
     </div>
 
     <!-- Statistics Grid -->
-    <section class="stats-section mt-18 group" in:fade={{ delay: 100 }}>
+    <section class="stats-section my-18 group" in:fade={{ delay: 100 }}>
         <h2 class="section-title">Your Statistics</h2>
-        <div class="grid grid-cols-4">
+        <div class="grid grid-cols-3">
             <StatCard
                 label="Total Courses Completed"
                 value={statistics.totalCoursesCompleted}
@@ -153,7 +153,7 @@
 
     <!-- Creator Stats Section -->
     {#if user.isCreator && creatorStats}
-        <section class="creator-section" in:fade={{ delay: 400 }}>
+        <section class="creator-section mt-20" in:fade={{ delay: 400 }}>
             <h2 class="section-title">Creator Statistics</h2>
             <div class="flex w-full flex-row p-4">
                 <StatCard
@@ -169,7 +169,7 @@
                     className="w-full px-8 py-2"
                 />
             </div>
-            <a href="/creator/studio" class="">
+            <a href="/studio" class="mt-4">
                 <button
                     class="bg-gradient-to-b from-primary/50 via-primary to-primary text-secondary px-4 py-2 rounded-3xl"
                     >Go to creator studio</button

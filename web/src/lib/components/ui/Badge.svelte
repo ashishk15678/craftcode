@@ -25,7 +25,7 @@
         default: "bg-secondary text-primary border-transparent",
         secondary: "bg-secondary text-secondary-foreground border-transparent",
         outline: "text-foreground border-border bg-transparent",
-        beginner: "bg-emerald-100 text-emerald-600 border-emerald-800/50",
+        beginner: "bg-background text-emerald-800 border-emerald-800/50",
         intermediate: "bg-amber-950/50 text-amber-400 border-amber-800/50",
         advanced: "bg-rose-950/50 text-rose-400 border-rose-800/50",
     };
