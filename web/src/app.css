@@ -10,6 +10,31 @@
     }
 }
 
+.animate-wave-once {
+    animation: wave_once 1s forwards 3 ease-in-out;
+}
+
+@keyframes wave_once {
+    0% {
+        rotate: 0deg;
+    }
+    33% {
+        rotate: 30deg;
+    }
+    50% {
+        rotate: -10deg;
+    }
+    100% {
+        rotate: 0deg;
+    }
+}
+
+.rubik-storm-regular {
+    font-family: "Rubik Storm", system-ui;
+    font-weight: 200;
+    font-style: normal;
+}
+
 .animate-shake {
     animation: shake 0.5s ease-in-out infinite;
 }
@@ -25,7 +50,6 @@
     /* We combine all movements into one transform string */
     transform: translateY(-1rem) translateX(-1rem);
 
-    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
     z-index: 10; /* Ensures the lifted card stays on top of neighbors */
 }
 

@@ -49,9 +49,15 @@
         <div class="bg-background shadow-xl">
             <Card>
                 <div class="text-center mb-8">
-                    <div
-                        class="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center mx-auto mb-2"
-                    ></div>
+                    <div class="w-8 h-8 mx-auto mb-2">
+                        <img
+                            src={"/assets/favicon.png"}
+                            alt="Logo"
+                            width={30}
+                            height={30}
+                            class="rounded-full"
+                        />
+                    </div>
                     <h1 class="text-lg font-bold text-foreground">
                         Welcome back
                     </h1>

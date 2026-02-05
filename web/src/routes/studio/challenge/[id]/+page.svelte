@@ -5,6 +5,8 @@
     import type { PageData, ActionData } from "./$types";
     import { enhance } from "$app/forms";
     import { marked } from "marked";
+    import { HugeiconsIcon } from "@hugeicons/svelte";
+    import { FullScreenIcon } from "@hugeicons/core-free-icons";
 
     let { data, form } = $props<{ data: PageData; form: ActionData }>();
 
@@ -27,52 +29,78 @@
         }
     });
     let creatingStage = $state(false);
+
+    // full screen logic
+    let containerRef = $state<HTMLElement | null>(null);
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            containerRef?.requestFullscreen().catch((err) => {
+                console.error(
+                    `Error attempting to enable fullscreen: ${err.message}`,
+                );
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
 </script>
 
 <svelte:head>
     <title>Edit: {data.challenge.title} - CraftCode</title>
 </svelte:head>
-
-<div class="h-screen flex flex-col bg-background">
+<div
+    bind:this={containerRef}
+    class="h-screen flex flex-col bg-background w-full max-w-7xl mx-auto border-x-2 border-border"
+>
     <!-- Header -->
     <header
         class="border-b border-border bg-card px-4 py-2 flex items-center justify-between shrink-0"
     >
-        <div class="flex items-center gap-4">
-            <a
-                href="/studio"
-                class="text-muted-foreground hover:text-foreground transition-colors"
-            >
-                <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+        <div class="flex flex-col">
+            <div class="flex items-center gap-4">
+                <a
+                    href="/studio"
+                    class="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                    ></path>
-                </svg>
-            </a>
-            <div>
-                <h1 class="font-semibold text-foreground">
-                    {data.challenge.title}
-                </h1>
-                <div class="flex items-center gap-2 mt-0.5">
-                    <Badge variant={"default"} size="sm" className="text-xs">
-                        {data.challenge.isPublished ? "Published" : "Draft"}
-                    </Badge>
-                    <span class="text-xs text-muted-foreground capitalize"
-                        >{data.challenge.difficulty}</span
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
                     >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                        ></path>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="font-semibold text-foreground">
+                        {data.challenge.title}
+                    </h1>
                 </div>
+            </div>
+            <div class="flex items-center ml-8 gap-2 mt-0.5">
+                <Badge variant={"default"} size="sm" className="text-xs">
+                    {data.challenge.isPublished ? "Published" : "Draft"}
+                </Badge>
+                <span class="text-xs text-muted-foreground capitalize"
+                    >{data.challenge.difficulty}</span
+                >
             </div>
         </div>
 
         <div class="flex items-center gap-3">
+            <button
+                class="hover:bg-secondary p-0.5 rounded-md transition-all"
+                onclick={toggleFullScreen}
+            >
+                <HugeiconsIcon icon={FullScreenIcon} />
+            </button>
+
             {#if data.challenge.isPublished}
                 <form method="POST" action="?/unpublish" use:enhance>
                     <button
@@ -87,7 +115,7 @@
                     <button
                         type="submit"
                         disabled={!data.isCreator}
-                        class="btn-primary text-sm"
+                        class="bg-secondary px-2 py-1 rounded-full text-muted-foreground text-xs border border-border hover:text-primary"
                         title={!data.isCreator
                             ? "Creator subscription required"
                             : ""}
@@ -101,6 +129,81 @@
             {/if}
         </div>
     </header>
+
+    <!-- Validation Errors/Warnings Banner -->
+    {#if form?.error && (form?.validationErrors || form?.validationWarnings)}
+        <div
+            class="border-b border-destructive/30 bg-destructive/10 px-4 py-3 transition-all"
+        >
+            <div class="flex items-start gap-3">
+                <svg
+                    class="w-5 h-5 text-destructive shrink-0 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                </svg>
+                <div class="flex-1">
+                    <p class="font-medium text-destructive text-sm">
+                        {form.error}
+                    </p>
+                    {#if form.validationErrors && form.validationErrors.length > 0}
+                        <ul class="mt-2 space-y-1">
+                            {#each form.validationErrors as error}
+                                <li class="text-sm text-destructive/80">
+                                    <span class="font-medium"
+                                        >{error.field}:</span
+                                    >
+                                    {error.message}
+                                </li>
+                            {/each}
+                        </ul>
+                    {/if}
+                    {#if form.validationWarnings && form.validationWarnings.length > 0}
+                        <div class="mt-2 pt-2 border-t border-amber-500/30">
+                            <p class="text-xs text-amber-500 font-medium mb-1">
+                                Warnings:
+                            </p>
+                            <ul class="space-y-1">
+                                {#each form.validationWarnings as warning}
+                                    <li class="text-xs text-amber-500/80">
+                                        <span class="font-medium"
+                                            >{warning.field}:</span
+                                        >
+                                        {warning.message}
+                                    </li>
+                                {/each}
+                            </ul>
+                        </div>
+                    {/if}
+                </div>
+                <button
+                    onclick={() => (form = null)}
+                    class="text-destructive/60 hover:text-destructive"
+                >
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    {/if}
 
     <!-- Main content -->
     <div class="flex-1 flex overflow-hidden">
@@ -124,7 +227,7 @@
                     <button
                         disabled={creatingStage}
                         type="submit"
-                        class="w-full bg-secondary rounded-xl text-primary text-sm py-2"
+                        class="w-full bg-secondary rounded-xl text-primary text-xs py-2"
                         >{#if creatingStage}
                             Adding...
                         {:else}
@@ -137,16 +240,15 @@
             <div class="flex-1 overflow-auto p-2">
                 {#each data.stages as stage (stage.id)}
                     <button
-                        class="w-full text-left px-3 py-2 rounded-lg mb-1 transition-colors
+                        class="w-full text-left px-3 py-1 rounded-xl mb-1 transition-colors
               {selectedStageId === stage.id
                             ? 'bg-primary/10 text-primary border border-primary/20'
                             : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}"
                         onclick={() => (selectedStageId = stage.id)}
                     >
-                        <span class="text-xs font-medium opacity-50"
-                            >Stage {stage.order}</span
+                        <span class="text-xs font-medium"
+                            >Stage {stage.order} : {stage.title}</span
                         >
-                        <div class="font-medium truncate">{stage.title}</div>
                     </button>
                 {/each}
             </div>
@@ -243,7 +345,7 @@
                                         />
                                         <button
                                             type="submit"
-                                            class="text-xs btn-secondary py-1 px-3"
+                                            class="text-xs text-green-500 underline py-1 px-3"
                                         >
                                             {saving ? "Saving..." : "Save"}
                                         </button>
@@ -264,7 +366,9 @@
                                 >
                                     Preview
                                 </div>
-                                <div class="flex-1 overflow-auto p-4 pt-2">
+                                <div
+                                    class="flex-1 overflow-auto p-4 pt-2 text-primary"
+                                >
                                     <MarkdownRenderer
                                         content={renderedMarkdown as string}
                                     />
@@ -275,7 +379,9 @@
                 </div>
 
                 <!-- Test/Settings Section -->
-                <div class="border-t border-border bg-card p-4 flex-shrink-0">
+                <div
+                    class="border-t border-border bg-card p-4 flex-shrink-0 bg-secondary"
+                >
                     {#if data.challenge.testRunnerType === "CSS"}
                         <!-- CSS Battle Settings -->
                         <h3 class="font-medium text-foreground mb-4">
@@ -494,7 +600,7 @@ echo "Module valid"`;
                             <textarea
                                 name="testScript"
                                 rows="12"
-                                class="w-full input-field font-mono text-sm resize-none mb-2"
+                                class="w-full input-field font-mono text-sm mb-2 bg-background"
                                 placeholder="#!/bin/bash&#10;# Test script for this stage..."
                                 value={selectedStage.testScript || ""}
                                 oninput={(e) => {
@@ -508,7 +614,7 @@ echo "Module valid"`;
                                 </p>
                                 <button
                                     type="submit"
-                                    class="btn-secondary text-sm"
+                                    class="bg-secondary rounded-xl p-2 border border-border text-sm"
                                 >
                                     Save Test Script
                                 </button>

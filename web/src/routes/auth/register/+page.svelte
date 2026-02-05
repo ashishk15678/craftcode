@@ -66,10 +66,14 @@
     <div class="relative w-full max-w-xs md:max-w-sm">
         <Card>
             <div class="text-center mb-4">
-                <div
-                    class="w-8 h-8 rounded-xl bg-linear-to-br from-primary to-blue-500 flex items-center justify-center mx-auto mb-4"
-                >
-                    <span class="text-white font-bold text-sm">CC</span>
+                <div class="w-8 h-8 mx-auto mb-2">
+                    <img
+                        src={"/assets/favicon.png"}
+                        alt="Logo"
+                        width={30}
+                        height={30}
+                        class="rounded-full"
+                    />
                 </div>
                 <h1 class="text-lg font-bold text-foreground">
                     Create your account
