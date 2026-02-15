@@ -25,6 +25,7 @@ program
   .command("init")
   .description("Initialize a challenge in current directory")
   .requiredOption("-c, --challenge <slug>", "Challenge slug to initialize")
+  .option("-L, --language <lang>", "Programming language (c, cpp, node, python, rust, go, bash)")
   .option("--no-scaffold", "Skip scaffolding starter files")
   .action(init);
 

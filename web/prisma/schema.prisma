@@ -95,6 +95,7 @@ enum TestRunnerType {
   IO_MATCHING // Input/output matching for competitive programming
   CUSTOM // Custom test runner
   CSS
+  JUDGE0 // Online code execution via Judge0 CE
 }
 
 enum EnvironmentType {
@@ -143,9 +144,15 @@ model Lesson {
 
   // CSS Challenge specific fields
   targetImageUrl String? // URL to target image for CSS challenges
+  targetCode     String? @db.Text // HTML/CSS code for target (alternative to image)
   canvasWidth    Int     @default(400)
   canvasHeight   Int     @default(300)
   matchThreshold Float   @default(95.0) // Percentage required to pass
+
+  // Judge0 Challenge specific fields
+  initialCode    String?  @db.Text // Initial code template for this stage
+  expectedOutput String?  @db.Text // Expected output for validation
+  language       String?  // Default language for this stage (e.g., "python", "javascript")
 
   courseId String
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -156,6 +163,7 @@ model Lesson {
   // Environment configuration for CLI testing
   environmentType   EnvironmentType?
   environmentConfig Json? // Full environment config as JSON
+  scaffoldFiles     Json? // Custom scaffold files: [{ path: string, content: string }]
 
   @@unique([courseId, order])
   @@index([courseId])

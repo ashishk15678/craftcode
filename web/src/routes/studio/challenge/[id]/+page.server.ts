@@ -45,9 +45,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       testScript: s.testScript,
       // CSS Challenge specific fields
       targetImageUrl: s.targetImageUrl,
+      targetCode: s.targetCode,
       canvasWidth: s.canvasWidth,
       canvasHeight: s.canvasHeight,
       matchThreshold: s.matchThreshold,
+      // Judge0 Challenge specific fields
+      initialCode: s.initialCode,
+      expectedOutput: s.expectedOutput,
+      language: s.language,
     })),
     isCreator: creatorStatus,
   };
@@ -103,9 +108,14 @@ export const actions: Actions = {
     const testScript = formData.get("testScript")?.toString();
     // CSS Challenge specific fields
     const targetImageUrl = formData.get("targetImageUrl")?.toString();
+    const targetCode = formData.get("targetCode")?.toString();
     const canvasWidth = formData.get("canvasWidth")?.toString();
     const canvasHeight = formData.get("canvasHeight")?.toString();
     const matchThreshold = formData.get("matchThreshold")?.toString();
+    // Judge0 Challenge specific fields
+    const initialCode = formData.get("initialCode")?.toString();
+    const expectedOutput = formData.get("expectedOutput")?.toString();
+    const language = formData.get("language")?.toString();
 
     if (!stageId) {
       return fail(400, { error: "Stage ID required" });
@@ -119,9 +129,14 @@ export const actions: Actions = {
         testScript: testScript || undefined,
         // CSS Challenge specific fields
         targetImageUrl: targetImageUrl || undefined,
+        targetCode: targetCode || undefined,
         canvasWidth: canvasWidth ? parseInt(canvasWidth) : undefined,
         canvasHeight: canvasHeight ? parseInt(canvasHeight) : undefined,
         matchThreshold: matchThreshold ? parseFloat(matchThreshold) : undefined,
+        // Judge0 Challenge specific fields
+        initialCode: initialCode !== undefined ? initialCode : undefined,
+        expectedOutput: expectedOutput !== undefined ? expectedOutput : undefined,
+        language: language || undefined,
       },
     });
 

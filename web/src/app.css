@@ -10,6 +10,25 @@
     }
 }
 
+/* NProgress Custom Styles */
+#nprogress .bar {
+    background: #ef4444 !important; /* Tailwind red-500 */
+    height: 3px !important;
+    z-index: 99999 !important;
+}
+
+#nprogress .peg {
+    box-shadow:
+        0 0 10px #ef4444,
+        0 0 5px #ef4444 !important;
+}
+
+#nprogress .spinner-icon {
+    border-top-color: #ef4444 !important;
+    border-left-color: #ef4444 !important;
+}
+
+
 .animate-wave-once {
     animation: wave_once 1s forwards 3 ease-in-out;
 }

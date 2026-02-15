@@ -3,12 +3,28 @@
     import Header from "$lib/components/Header.svelte";
     import Onboarding from "$lib/components/Onboarding.svelte";
     import type { LayoutData } from "./$types";
+    import { dev } from "$app/environment";
+    import { injectAnalytics } from "@vercel/analytics/sveltekit";
+    import NProgress from "nprogress";
+    import "nprogress/nprogress.css";
+    import { navigating } from "$app/stores";
+
     let { data, children } = $props<{ data: LayoutData; children: any }>();
-    
+
+    NProgress.configure({ showSpinner: false });
+
+    $effect(() => {
+        if ($navigating) {
+            NProgress.start();
+        } else {
+            NProgress.done();
+        }
+    });
+
     // Show onboarding only if user is logged in and hasn't completed it
-    let showOnboarding = $derived(
-        data.user && !data.user.onboardingCompleted
-    );
+    let showOnboarding = $derived(data.user && !data.user.onboardingCompleted);
+    // vercel analytics
+    injectAnalytics({ mode: dev ? "development" : "production" });
 </script>
 
 {#if showOnboarding && data.user}

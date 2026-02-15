@@ -3,9 +3,11 @@ import { error, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { goto } from "$app/navigation";
 import { HandleError } from "$lib/custom-error-handler";
+import { JUDGE0_API_URL, JUDGE0_API_KEY } from "$env/static/private";
 
 export const load: PageServerLoad = async ({ params, locals }) => {
   const userId = locals.user?.id;
+
   const user = HandleError({
     fn: await db.user.findFirstOrThrow,
   }).run({
@@ -30,6 +32,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
           testScriptUrl: true,
           // CSS Challenge specific fields
           targetImageUrl: true,
+          targetCode: true, // Added
           canvasWidth: true,
           canvasHeight: true,
           matchThreshold: true,
@@ -75,6 +78,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     challenge.lessons.find((lesson) => !completedLessonIds.has(lesson.id)) ||
     challenge.lessons[0];
 
+  let languages = await (
+    await fetch(`${JUDGE0_API_URL}/languages`, {
+      method: "GET",
+      headers: {
+        "X-AUTH-TOKEN": "chaicodecodebox",
+        "Content-Type": "application/json",
+      },
+      cache: "force-cache",
+    })
+  ).json();
+
   return {
     challenge: {
       id: challenge.id,
@@ -98,6 +112,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       isCompleted: completedLessonIds.has(lesson.id),
       // CSS Challenge specific fields
       targetImageUrl: lesson.targetImageUrl,
+      targetCode: lesson.targetCode, // Added
       canvasWidth: lesson.canvasWidth,
       canvasHeight: lesson.canvasHeight,
       matchThreshold: lesson.matchThreshold,
@@ -106,6 +121,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     isAuthenticated: !!userId,
     currentLessonId: currentLesson?.id || null,
     completedLessonIds: Array.from(completedLessonIds),
+    languages: await languages,
   };
 };
 

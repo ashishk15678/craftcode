@@ -2,6 +2,7 @@ import { spawn, type ChildProcess } from "child_process";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { validateScriptContent } from "./security.js";
 
 export interface RunResult {
   exitCode: number;
@@ -10,8 +11,16 @@ export interface RunResult {
 
 /**
  * Execute a bash script and stream output to terminal
+ * SECURITY: Validates script content before execution
  */
 export async function runScript(script: string): Promise<RunResult> {
+  // Security: Validate script content before execution
+  const validation = validateScriptContent(script);
+  if (!validation.valid) {
+    console.error(`Security error: ${validation.reason}`);
+    return { exitCode: 1, success: false };
+  }
+
   // Create temporary file
   const tempDir = os.tmpdir();
   const tempFile = path.join(tempDir, `craftcode-test-${Date.now()}.sh`);
@@ -24,6 +33,7 @@ export async function runScript(script: string): Promise<RunResult> {
       const child: ChildProcess = spawn("bash", [tempFile], {
         stdio: "inherit",
         cwd: process.cwd(),
+        // Security: Do not use shell - run bash directly
       });
 
       child.on("error", (err) => {
@@ -52,8 +62,23 @@ export async function runScript(script: string): Promise<RunResult> {
 
 /**
  * Run a script from a URL
+ * SECURITY: Validates script content before execution
  */
 export async function runScriptFromUrl(url: string): Promise<RunResult> {
+  // Security: Validate URL format
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url);
+    // Only allow HTTPS for remote scripts
+    if (parsedUrl.protocol !== "https:") {
+      console.error("Security error: Only HTTPS URLs are allowed for scripts");
+      return { exitCode: 1, success: false };
+    }
+  } catch {
+    console.error("Security error: Invalid URL format");
+    return { exitCode: 1, success: false };
+  }
+
   const response = await fetch(url);
 
   if (!response.ok) {

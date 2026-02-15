@@ -7,9 +7,42 @@ import { apiRequest } from "../utils/api.js";
 import type { CraftCodeConfig } from "../types/index.js";
 import * as os from "os";
 
+// Supported programming languages
+const SUPPORTED_LANGUAGES = [
+  { value: "c", label: "C" },
+  { value: "cpp", label: "C++" },
+  { value: "node", label: "Node.js / JavaScript" },
+  { value: "python", label: "Python" },
+  { value: "rust", label: "Rust" },
+  { value: "go", label: "Go" },
+  { value: "bash", label: "Bash" },
+] as const;
+
 interface InitOptions {
   challenge: string;
+  language?: string;
   noScaffold?: boolean;
+}
+
+/**
+ * Validate a file path is safe (no path traversal attacks)
+ */
+function isPathSafe(filePath: string): boolean {
+  if (!filePath || typeof filePath !== "string") return false;
+  
+  // Normalize path separators
+  const normalized = path.normalize(filePath).replace(/\\/g, "/");
+  
+  // Reject: absolute paths, parent directory refs, excessively long paths
+  if (path.isAbsolute(normalized)) return false;
+  if (normalized.startsWith("..") || normalized.includes("/../") || normalized.endsWith("/..")) return false;
+  if (normalized.length > 256) return false;
+  
+  // Reject paths to sensitive locations
+  const dangerous = ["/etc/", "/usr/", "/bin/", "/var/", "/.ssh/", "/.git/"];
+  if (dangerous.some((d) => normalized.includes(d))) return false;
+  
+  return true;
 }
 
 export async function init(options: InitOptions): Promise<void> {
@@ -21,10 +54,41 @@ export async function init(options: InitOptions): Promise<void> {
   }
 
   const { challenge, noScaffold } = options;
+  let { language } = options;
 
   if (!challenge) {
     p.log.error("Challenge slug is required. Use --challenge <slug>");
     process.exit(1);
+  }
+
+  // Validate or prompt for language
+  if (language) {
+    const validLang = SUPPORTED_LANGUAGES.find(
+      (l) => l.value === language?.toLowerCase()
+    );
+    if (!validLang) {
+      p.log.error(
+        `Invalid language "${language}". Supported: ${SUPPORTED_LANGUAGES.map((l) => l.value).join(", ")}`
+      );
+      process.exit(1);
+    }
+    language = validLang.value;
+  } else {
+    // Interactive language selection
+    const selectedLang = await p.select({
+      message: "Select programming language:",
+      options: SUPPORTED_LANGUAGES.map((l) => ({
+        value: l.value,
+        label: l.label,
+      })),
+    });
+
+    if (p.isCancel(selectedLang)) {
+      p.cancel("Initialization cancelled");
+      process.exit(0);
+    }
+
+    language = selectedLang as string;
   }
 
   // Check if craftcode.json already exists
@@ -44,9 +108,13 @@ export async function init(options: InitOptions): Promise<void> {
   const spinner = p.spinner();
   spinner.start("Fetching challenge configuration...");
 
-  // Fetch config from server
-  const scaffoldParam = noScaffold ? "?scaffold=false" : "";
-  const endpoint = `/api/cli/challenge/${encodeURIComponent(challenge)}/config${scaffoldParam}`;
+  // Build query parameters safely
+  const params = new URLSearchParams();
+  if (language) params.set("language", language);
+  if (noScaffold) params.set("scaffold", "false");
+  
+  const queryString = params.toString();
+  const endpoint = `/api/cli/challenge/${encodeURIComponent(challenge)}/config${queryString ? `?${queryString}` : ""}`;
 
   const response = await apiRequest<CraftCodeConfig>(endpoint);
 
@@ -93,7 +161,22 @@ export async function init(options: InitOptions): Promise<void> {
     p.log.step("Creating scaffold files...");
 
     for (const file of config.scaffold.files) {
+      // Security: Validate file path before creating
+      if (!isPathSafe(file.path)) {
+        p.log.warning(`Skipped unsafe path: ${file.path}`);
+        continue;
+      }
+
       const filePath = path.join(process.cwd(), file.path);
+      
+      // Double-check the resolved path is still within cwd
+      const resolvedPath = path.resolve(filePath);
+      const cwd = process.cwd();
+      if (!resolvedPath.startsWith(cwd + path.sep) && resolvedPath !== cwd) {
+        p.log.warning(`Skipped path outside project: ${file.path}`);
+        continue;
+      }
+
       const fileDir = path.dirname(filePath);
 
       // Create directory if needed

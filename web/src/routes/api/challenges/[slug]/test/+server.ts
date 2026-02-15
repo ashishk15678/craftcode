@@ -15,7 +15,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 
   try {
     const body = await request.json();
-    const { lessonId, userCode } = body;
+    const { lessonId, userCode, language, stdin } = body;
 
     if (!lessonId) {
       return json({ error: 'lessonId is required' }, { status: 400 });
@@ -29,7 +29,10 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
     const lesson = await db.lesson.findUnique({
       where: { id: lessonId },
       include: {
-        course: true
+        course: true,
+        testCases: {
+          orderBy: { order: 'asc' }
+        }
       }
     });
 
@@ -41,18 +44,90 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
       return json({ error: 'Lesson does not belong to this challenge' }, { status: 400 });
     }
 
-    // Check if lesson has a test script
-    if (!lesson.testScript && !lesson.testScriptUrl) {
+    // For JUDGE0 runner type, we don't need a test script
+    const isJudge0 = lesson.course.testRunnerType === 'JUDGE0';
+    
+    // Check if lesson has a test script (not required for Judge0)
+    if (!isJudge0 && !lesson.testScript && !lesson.testScriptUrl) {
       return json({ error: 'No test script available for this lesson' }, { status: 400 });
     }
 
-    // Create temporary working directory
+    // For Judge0, execute directly without temp directory
+    if (isJudge0) {
+      const testCases = lesson.testCases || [];
+      let allPassed = true;
+      let totalOutput = "";
+      const startTime = Date.now();
+
+      const testRunner = createTestRunner({
+        type: 'JUDGE0' as any,
+        language: language || 'javascript',
+        timeout: 10000,
+      });
+
+      if (testCases.length > 0) {
+        // Run against each test case
+        for (const testCase of testCases) {
+          const result = await testRunner.execute(
+            '',
+            userCode,
+            testCase.input || stdin || ''
+          );
+
+          const passed = testCase.expectedOutput 
+            ? result.output.trim() === testCase.expectedOutput.trim()
+            : result.success;
+          
+          allPassed = allPassed && passed;
+          totalOutput += `${testCase.name}: ${passed ? '✓ PASS' : '✗ FAIL'}\n`;
+          
+          if (!passed && !testCase.isHidden) {
+            if (testCase.expectedOutput) {
+              totalOutput += `  Expected: ${testCase.expectedOutput.trim()}\n`;
+              totalOutput += `  Got: ${result.output.trim()}\n`;
+            }
+            if (result.error) {
+              totalOutput += `  Error: ${result.error}\n`;
+            }
+          }
+          totalOutput += '\n';
+        }
+      } else {
+        // No test cases, just execute and check for successful run
+        const result = await testRunner.execute('', userCode, stdin || '');
+        allPassed = result.success;
+        totalOutput = result.output || '';
+        if (result.error) {
+          totalOutput += `\nError: ${result.error}`;
+        }
+      }
+
+      const duration = Date.now() - startTime;
+
+      if (allPassed) {
+        return await handleSuccessfulTest(locals.user.id, lessonId, lesson, {
+          success: true,
+          output: totalOutput,
+          duration,
+        });
+      } else {
+        return json({
+          success: false,
+          result: {
+            success: false,
+            output: totalOutput,
+            duration,
+          },
+          lessonComplete: false
+        });
+      }
+    }
+
+    // For non-Judge0 runners, use temp directory
     const workingDir = join(tmpdir(), `craftcode-${locals.user.id}-${Date.now()}`);
     await mkdir(workingDir, { recursive: true });
 
     try {
-      // Write user code to file
-      // Determine file extension based on test runner type
       const extensions: Record<string, string> = {
         NODE: 'js',
         PYTHON: 'py',
@@ -64,87 +139,23 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
       const userCodePath = join(workingDir, `solution.${ext}`);
       await writeFile(userCodePath, userCode, 'utf-8');
 
-      // Write test script if inline
       if (lesson.testScript) {
         const testScriptPath = join(workingDir, 'test.sh');
         await writeFile(testScriptPath, lesson.testScript, { mode: 0o755 });
       }
 
-      // Create test runner
       const testRunner = createTestRunner({
         type: lesson.course.testRunnerType,
         script: lesson.testScript || undefined,
         scriptUrl: lesson.testScriptUrl || undefined,
-        timeout: 60000 // 60 seconds
+        timeout: 60000
       });
 
-      // Execute tests
       const result = await testRunner.execute(workingDir, userCode);
 
-      // If tests passed, mark lesson as complete
       if (result.success) {
-        // Check if already completed
-        const existingProgress = await db.userProgress.findUnique({
-          where: {
-            userId_lessonId: {
-              userId: locals.user.id,
-              lessonId
-            }
-          }
-        });
-
-        if (!existingProgress) {
-          await db.userProgress.create({
-            data: {
-              userId: locals.user.id,
-              lessonId
-            }
-          });
-        }
-
-        // Get updated progress
-        const totalLessons = await db.lesson.count({
-          where: { courseId: lesson.course.id }
-        });
-
-        const completedLessons = await db.userProgress.count({
-          where: {
-            userId: locals.user.id,
-            lesson: { courseId: lesson.course.id }
-          }
-        });
-
-        // Find next lesson
-        const nextLesson = await db.lesson.findFirst({
-          where: {
-            courseId: lesson.course.id,
-            order: lesson.order + 1
-          }
-        });
-
-        return json({
-          success: true,
-          result: {
-            success: result.success,
-            output: result.output,
-            error: result.error,
-            duration: result.duration
-          },
-          progress: {
-            completed: completedLessons,
-            total: totalLessons,
-            percentage: Math.round((completedLessons / totalLessons) * 100)
-          },
-          lessonComplete: true,
-          challengeComplete: !nextLesson,
-          nextLesson: nextLesson ? {
-            id: nextLesson.id,
-            order: nextLesson.order,
-            title: nextLesson.title
-          } : null
-        });
+        return await handleSuccessfulTest(locals.user.id, lessonId, lesson, result);
       } else {
-        // Tests failed
         return json({
           success: false,
           result: {
@@ -157,7 +168,6 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
         });
       }
     } finally {
-      // Cleanup working directory
       try {
         await rm(workingDir, { recursive: true, force: true });
       } catch (err) {
@@ -175,3 +185,63 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
     );
   }
 };
+
+async function handleSuccessfulTest(userId: string, lessonId: string, lesson: any, result: any) {
+  const existingProgress = await db.userProgress.findUnique({
+    where: {
+      userId_lessonId: {
+        userId,
+        lessonId
+      }
+    }
+  });
+
+  if (!existingProgress) {
+    await db.userProgress.create({
+      data: {
+        userId,
+        lessonId
+      }
+    });
+  }
+
+  const totalLessons = await db.lesson.count({
+    where: { courseId: lesson.course.id }
+  });
+
+  const completedLessons = await db.userProgress.count({
+    where: {
+      userId,
+      lesson: { courseId: lesson.course.id }
+    }
+  });
+
+  const nextLesson = await db.lesson.findFirst({
+    where: {
+      courseId: lesson.course.id,
+      order: lesson.order + 1
+    }
+  });
+
+  return json({
+    success: true,
+    result: {
+      success: result.success,
+      output: result.output,
+      error: result.error,
+      duration: result.duration
+    },
+    progress: {
+      completed: completedLessons,
+      total: totalLessons,
+      percentage: Math.round((completedLessons / totalLessons) * 100)
+    },
+    lessonComplete: true,
+    challengeComplete: !nextLesson,
+    nextLesson: nextLesson ? {
+      id: nextLesson.id,
+      order: nextLesson.order,
+      title: nextLesson.title
+    } : null
+  });
+}

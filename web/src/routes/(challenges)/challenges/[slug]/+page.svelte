@@ -7,9 +7,10 @@
     import type { PageData } from "./$types";
     import { marked } from "marked";
     import CodeComp from "$lib/components/CodeComp.svelte";
+    import CodeExecutor from "$lib/components/CodeExecutor.svelte";
+    import ChallengeCodeEditor from "$lib/components/ChallengeCodeEditor.svelte";
 
     let { data } = $props<{ data: PageData }>();
-
     let selectedStageId = $state<string | null>(data.stages[0]?.id || null);
 
     const selectedStage = $derived(
@@ -132,30 +133,25 @@
 
                     {#if !isCSSChallenge}
                         <GlowCard
-                            className="w-full lg:w-80  shadow-xl bg-gradient-to-b from-secondary/20 via-secondary to-primary/20"
+                            className="w-full lg:w-80  shadow-xl bg-gradient-to-b from-secondary/10 via-secondary/30 to-primary/5"
                         >
                             <div class="p-5">
                                 <h3 class="font-semibold text-foreground">
                                     Get Started
                                 </h3>
                                 <p class="text-sm text-muted-foreground mb-4">
-                                    Install the CLI and run tests locally:
+                                    Install the CLI and run tests locally or use
+                                    our web sandbox.
                                 </p>
                                 <div class=" font-mono text-sm">
-                                    <CodeComp className="rounded-4xl p- 2">
-                                        <div class="text-muted-foreground">
-                                            # Install cli
-                                        </div>
-                                        <div class="text-foreground">
-                                            npm i -g craftcode
+                                    <div class="">
+                                        <div class="text-primary">
+                                            # Install cli<br /> npm i -g craftcode
                                         </div>
                                         <div class="text-muted-foreground mt-2">
-                                            # Run tests
+                                            # Run tests<br /> craftcode test
                                         </div>
-                                        <div class="text-foreground">
-                                            craftcode test
-                                        </div>
-                                    </CodeComp>
+                                    </div>
                                 </div>
                             </div>
                         </GlowCard>
@@ -207,11 +203,11 @@
                                 Stages
                             </h2>
                             <div
-                                class="space-y-2 flex overflow-x-auto flex-1 w-full"
+                                class="space-y-2 flex gap-x-2 overflow-x-auto flex-1 w-full"
                             >
                                 {#each data.stages as stage (stage.id)}
                                     <button
-                                        class="w-full text-left px-4 py-1 rounded-3xl transition-colors flex items-center gap-3 shrink-0 flex-1
+                                        class=" text-left px-2 py-1 rounded-xl transition-colors flex items-center gap-3 flex-1 max-w-32
                       {selectedStageId === stage.id
                                             ? 'bg-primary/10 border border-primary/20'
                                             : 'bg-card border border-border hover:border-primary/30'}"
@@ -219,7 +215,7 @@
                                             (selectedStageId = stage.id)}
                                     >
                                         <div
-                                            class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0
+                                            class="w-4 h-4 rounded-full flex items-center justify-center
                         {stage.isCompleted
                                                 ? 'bg-emerald-500 text-white'
                                                 : 'bg-secondary text-muted-foreground'}"
@@ -246,7 +242,7 @@
                                             {/if}
                                         </div>
                                         <span
-                                            class="font-medium text-foreground truncate"
+                                            class="font-medium text-foreground truncate text-xs"
                                             >{stage.title}</span
                                         >
                                     </button>
@@ -266,20 +262,17 @@
                                     <CSSBattleEditor
                                         lessonId={selectedStage.id}
                                         challengeSlug={data.challenge.slug}
-                                        targetImageUrl={selectedStage.targetImageUrl ||
-                                            ""}
-                                        canvasWidth={selectedStage.canvasWidth ||
-                                            400}
-                                        canvasHeight={selectedStage.canvasHeight ||
-                                            300}
-                                        matchThreshold={selectedStage.matchThreshold ||
-                                            95}
+                                        targetImageUrl={selectedStage.targetImageUrl || ""}
+                                        targetCode={selectedStage.targetCode || ""}
+                                        canvasWidth={selectedStage.canvasWidth || 400}
+                                        canvasHeight={selectedStage.canvasHeight || 300}
+                                        matchThreshold={selectedStage.matchThreshold || 95}
                                         onTestComplete={handleTestComplete}
                                     />
                                 </div>
                             {:else}
                                 <!-- Standard Instructions -->
-                                <GlowCard>
+                                <!-- <GlowCard>
                                     <div class="p-6 sm:p-8">
                                         <div
                                             class="flex items-center gap-3 mb-6"
@@ -322,7 +315,7 @@
                                             />
                                         </div>
                                     </div>
-                                </GlowCard>
+                                </GlowCard> -->
                             {/if}
                         {:else}
                             <div
@@ -331,6 +324,9 @@
                                 Select a stage to view instructions
                             </div>
                         {/if}
+                        <div></div>
+                        <CodeExecutor {data} />
+                        <ChallengeCodeEditor stageId={data.stages.id} />
                     </main>
                 </div>
             </div>
