@@ -123,7 +123,7 @@
                             {#if data.challenge.isOwner}
                                 <a
                                     href="/studio/challenge/{data.challenge.id}"
-                                    class="bg-secondary px-4 py-1 rounded-2xl border border-border text-sm"
+                                    class="bg-secondary text-primary px-4 py-1 rounded-2xl border border-border text-sm"
                                 >
                                     Edit Challenge
                                 </a>
@@ -262,11 +262,16 @@
                                     <CSSBattleEditor
                                         lessonId={selectedStage.id}
                                         challengeSlug={data.challenge.slug}
-                                        targetImageUrl={selectedStage.targetImageUrl || ""}
-                                        targetCode={selectedStage.targetCode || ""}
-                                        canvasWidth={selectedStage.canvasWidth || 400}
-                                        canvasHeight={selectedStage.canvasHeight || 300}
-                                        matchThreshold={selectedStage.matchThreshold || 95}
+                                        targetImageUrl={selectedStage.targetImageUrl ||
+                                            ""}
+                                        targetCode={selectedStage.targetCode ||
+                                            ""}
+                                        canvasWidth={selectedStage.canvasWidth ||
+                                            400}
+                                        canvasHeight={selectedStage.canvasHeight ||
+                                            300}
+                                        matchThreshold={selectedStage.matchThreshold ||
+                                            95}
                                         onTestComplete={handleTestComplete}
                                     />
                                 </div>
@@ -324,9 +329,11 @@
                                 Select a stage to view instructions
                             </div>
                         {/if}
-                        <div></div>
-                        <CodeExecutor {data} />
-                        <ChallengeCodeEditor stageId={data.stages.id} />
+                        {#if !isCSSChallenge}
+                            <div></div>
+                            <CodeExecutor {data} />
+                            <ChallengeCodeEditor stageId={data.stages.id} />
+                        {/if}
                     </main>
                 </div>
             </div>

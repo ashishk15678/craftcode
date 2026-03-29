@@ -58,6 +58,7 @@
     let isRunning = false;
     let testResult: any = null;
     let showOutput = false;
+    let targetCode = "";
 
     // Canvas refs
     let outputCanvas: HTMLCanvasElement;
@@ -358,13 +359,14 @@
                             style="width: {canvasWidth}px; height: {canvasHeight}px;"
                         ></iframe>
                         {#if targetCode}
-                             <iframe
+                            <iframe
                                 bind:this={targetIframe}
                                 src={targetIframeSrc}
                                 class="bg-white"
                                 style="width: {canvasWidth}px; height: {canvasHeight}px;"
                             ></iframe>
-                        {:else}
+                        {/if}
+                        {#if targetImageUrl}
                             <img
                                 src={targetImageUrl}
                                 alt="target"
