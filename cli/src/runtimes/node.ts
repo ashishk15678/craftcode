@@ -1,10 +1,10 @@
 // Node.js Runtime implementation
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs';
-import path from 'path';
-import { Runtime, type RuntimeResult } from './base.js';
-import type { EnvironmentConfig } from '../types/index.js';
+import { exec } from "child_process";
+import { promisify } from "util";
+import fs from "fs";
+import path from "path";
+import { Runtime, type RuntimeResult } from "./base.js";
+import type { EnvironmentConfig } from "../types/index.js";
 
 const execAsync = promisify(exec);
 
@@ -22,34 +22,34 @@ export class NodeRuntime extends Runtime {
 
   async prepare(): Promise<RuntimeResult> {
     const startTime = Date.now();
-    
+
     // Check if package.json exists and run npm install if needed
-    const packageJsonPath = path.join(this.workDir, 'package.json');
-    
+    const packageJsonPath = path.join(this.workDir, "package.json");
+
     if (fs.existsSync(packageJsonPath)) {
       // Check if node_modules exists
-      const nodeModulesPath = path.join(this.workDir, 'node_modules');
-      
+      const nodeModulesPath = path.join(this.workDir, "node_modules");
+
       if (!fs.existsSync(nodeModulesPath)) {
         try {
-          const installCommand = this.config.installCommand || 'npm install';
+          const installCommand = this.config.installCommand || "npm install";
           const { stdout, stderr } = await execAsync(installCommand, {
             cwd: this.workDir,
             timeout: 120000, // 2 minute timeout for npm install
           });
-          
+
           return {
             success: true,
-            output: stdout || 'Dependencies installed successfully',
+            output: stdout || "Dependencies installed successfully",
             errors: stderr || undefined,
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
         } catch (error: any) {
           return {
             success: false,
-            output: error.stdout || '',
-            errors: error.message || 'Failed to install dependencies',
-            duration: Date.now() - startTime
+            output: error.stdout || "",
+            errors: error.message || "Failed to install dependencies",
+            duration: Date.now() - startTime,
           };
         }
       }
@@ -58,14 +58,21 @@ export class NodeRuntime extends Runtime {
     // No preparation needed
     return {
       success: true,
-      output: 'Node.js runtime ready',
-      duration: Date.now() - startTime
+      output: "Node.js runtime ready",
+      duration: Date.now() - startTime,
     };
   }
 
   getExecutablePath(): string {
+    // Check if a hidden harness exists in .craftcode
+    // We prefer the harness as the entry point if it exists
+    const hiddenHarness = path.join(this.workDir, ".craftcode", "index.js");
+    if (fs.existsSync(hiddenHarness)) {
+      return hiddenHarness;
+    }
+
     // For Node.js, return the entry point file
-    return this.config.entryPoint || 'index.js';
+    return this.config.entryPoint || "index.js";
   }
 
   getRunCommand(): string {

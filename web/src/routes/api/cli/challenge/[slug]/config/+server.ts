@@ -203,6 +203,16 @@ export const GET: RequestHandler = async ({ params, request, url }) => {
     return json({ error: 'Challenge slug required' }, { status: 400 });
   }
 
+  // Get requested language from query param (validated later)
+  const requestedLanguage = url.searchParams.get('language')?.toUpperCase();
+  const validLanguages = ['C', 'CPP', 'NODE', 'PYTHON', 'RUST', 'GO', 'BASH'];
+  
+  if (requestedLanguage && !validLanguages.includes(requestedLanguage)) {
+    return json({ 
+      error: `Invalid language. Supported: ${validLanguages.join(', ').toLowerCase()}` 
+    }, { status: 400 });
+  }
+
   // Get the challenge
   const course = await db.course.findUnique({
     where: { slug },
@@ -245,8 +255,8 @@ export const GET: RequestHandler = async ({ params, request, url }) => {
     return json({ error: 'No lessons found in this challenge' }, { status: 404 });
   }
 
-  // Determine environment type
-  const envType = currentLesson.environmentType || 'C';
+  // Determine environment type: requested > lesson default > C
+  const envType = requestedLanguage || currentLesson.environmentType || 'C';
   const envTypeStr = String(envType);
   
   // Merge default config with lesson-specific overrides
@@ -291,10 +301,27 @@ export const GET: RequestHandler = async ({ params, request, url }) => {
 
   // Add scaffold files if requested
   const includeScaffold = url.searchParams.get('scaffold') !== 'false';
-  if (includeScaffold && scaffoldTemplates[envTypeStr]) {
-    config.scaffold = {
-      files: scaffoldTemplates[envTypeStr]
-    };
+  if (includeScaffold) {
+    // Use lesson's custom scaffold files if available, otherwise use defaults
+    const lessonScaffolds = currentLesson.scaffoldFiles as Array<{ path: string; content: string }> | null;
+    
+    if (lessonScaffolds && Array.isArray(lessonScaffolds) && lessonScaffolds.length > 0) {
+      // Validate scaffold file paths for security (no path traversal)
+      const safeScaffolds = lessonScaffolds.filter(file => {
+        if (!file.path || typeof file.path !== 'string') return false;
+        const normalized = file.path.replace(/\\/g, '/');
+        // Reject absolute paths, parent directory references, and hidden files in dangerous locations
+        return !normalized.startsWith('/') && 
+               !normalized.startsWith('..') && 
+               !normalized.includes('/../') &&
+               !normalized.includes('/..') &&
+               normalized.length < 256;
+      });
+      
+      config.scaffold = { files: safeScaffolds };
+    } else if (scaffoldTemplates[envTypeStr]) {
+      config.scaffold = { files: scaffoldTemplates[envTypeStr] };
+    }
   }
 
   return json(config);

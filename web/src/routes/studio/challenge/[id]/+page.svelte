@@ -7,11 +7,15 @@
     import { marked } from "marked";
     import { HugeiconsIcon } from "@hugeicons/svelte";
     import { FullScreenIcon } from "@hugeicons/core-free-icons";
+    import StudioCSSTargetEditor from "$lib/components/studio/StudioCSSTargetEditor.svelte";
 
     let { data, form } = $props<{ data: PageData; form: ActionData }>();
 
     let selectedStageId = $state<string | null>(data.stages[0]?.id || null);
     let editorContent = $state("");
+    let targetCode = $state("");
+    let targetSource = $state<"image" | "code">("image");
+    
     let saving = $state(false);
 
     const selectedStage = $derived(
@@ -26,6 +30,8 @@
     $effect(() => {
         if (selectedStage) {
             editorContent = selectedStage.instructionsMd;
+            targetCode = selectedStage.targetCode || "";
+            targetSource = selectedStage.targetCode ? "code" : "image";
         }
     });
     let creatingStage = $state(false);
@@ -53,6 +59,15 @@
     bind:this={containerRef}
     class="h-screen flex flex-col bg-background w-full max-w-7xl mx-auto border-x-2 border-border"
 >
+    <div
+        class="min-sm:hidden fixed py-10 px-5 w-screen z-99 bg-red-100 text-red-500"
+    >
+        <p class="text-2xl font-bold">Mobile device not supported.</p>
+        <p>
+            This experience is not suited for mobile devices. We are sorry for
+            this but please switch to Desktop for your own convenience.
+        </p>
+    </div>
     <!-- Header -->
     <header
         class="border-b border-border bg-card px-4 py-2 flex items-center justify-between shrink-0"
@@ -402,23 +417,54 @@
 
                             <div>
                                 <label
-                                    for="targetImageUrl"
                                     class="block text-sm font-medium text-muted-foreground mb-1"
                                 >
-                                    Target Image URL
+                                    Target Source
                                 </label>
-                                <input
-                                    type="url"
-                                    id="targetImageUrl"
-                                    name="targetImageUrl"
-                                    class="input-field w-full"
-                                    placeholder="https://example.com/target.png"
-                                    value={selectedStage.targetImageUrl || ""}
-                                />
-                                <p class="text-xs text-muted-foreground mt-1">
-                                    URL to the target image users need to
-                                    recreate
-                                </p>
+                                <div class="flex gap-2 mb-2">
+                                    <button
+                                        type="button"
+                                        class="px-3 py-1 text-xs rounded transition-colors {targetSource === 'image' ? 'bg-primary text-secondary' : 'bg-background hover:bg-secondary'}"
+                                        onclick={() => targetSource = 'image'}
+                                    >
+                                        Image URL
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="px-3 py-1 text-xs rounded transition-colors {targetSource === 'code' ? 'bg-primary text-secondary' : 'bg-background hover:bg-secondary'}"
+                                        onclick={() => targetSource = 'code'}
+                                    >
+                                        Code (HTML/CSS)
+                                    </button>
+                                </div>
+
+                                {#if targetSource === 'image'}
+                                    <label
+                                        for="targetImageUrl"
+                                        class="block text-sm font-medium text-muted-foreground mb-1"
+                                    >
+                                        Target Image URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        id="targetImageUrl"
+                                        name="targetImageUrl"
+                                        class="input-field w-full"
+                                        placeholder="https://example.com/target.png"
+                                        value={selectedStage.targetImageUrl || ""}
+                                    />
+                                    <p class="text-xs text-muted-foreground mt-1">
+                                        URL to the target image users need to recreate
+                                    </p>
+                                {:else}
+                                    <input type="hidden" name="targetCode" value={targetCode} />
+                                    <StudioCSSTargetEditor 
+                                        bind:code={targetCode} 
+                                    />
+                                    <p class="text-xs text-muted-foreground mt-1">
+                                        Write HTML/CSS that renders the target. Ideally use a container with fixed size.
+                                    </p>
+                                {/if}
                             </div>
 
                             <div class="grid grid-cols-3 gap-4">

@@ -29,9 +29,16 @@ export class CRuntime extends Runtime {
     const sourcePatterns =
       this.config.sourceFiles ||
       (this.config.name === "cpp" ? ["*.cpp", "*.cc"] : ["*.c"]);
+
+    // Always include hidden harness files from .craftcode directory
+    const hiddenPatterns =
+      this.config.name === "cpp"
+        ? [".craftcode/*.cpp", ".craftcode/*.cc"]
+        : [".craftcode/*.c"];
+
     let sourceFiles: string[] = [];
 
-    for (const pattern of sourcePatterns) {
+    for (const pattern of [...sourcePatterns, ...hiddenPatterns]) {
       const matches = await glob(pattern, { cwd: this.workDir });
       sourceFiles.push(...matches);
     }

@@ -58,6 +58,7 @@
     let isRunning = false;
     let testResult: any = null;
     let showOutput = false;
+    let targetCode = "";
 
     // Canvas refs
     let outputCanvas: HTMLCanvasElement;
@@ -357,19 +358,41 @@
                             class="bg-white"
                             style="width: {canvasWidth}px; height: {canvasHeight}px;"
                         ></iframe>
+                        {#if targetCode}
+                            <iframe
+                                bind:this={targetIframe}
+                                src={targetIframeSrc}
+                                class="bg-white"
+                                style="width: {canvasWidth}px; height: {canvasHeight}px;"
+                            ></iframe>
+                        {/if}
+                        {#if targetImageUrl}
+                            <img
+                                src={targetImageUrl}
+                                alt="target"
+                                style="width: {canvasWidth}px; height: {canvasHeight}px;"
+                            />
+                        {/if}
+                    </div>
+                {:else if comparisonMode === "slider"}
+                    {#if targetCode}
+                        <div
+                            class="absolute inset-0 bg-white"
+                            style="width: 100%; height: 100%;"
+                        >
+                            <iframe
+                                src={targetIframeSrc}
+                                class="w-full h-full border-none pointer-events-none"
+                            ></iframe>
+                        </div>
+                    {:else}
                         <img
                             src={targetImageUrl}
                             alt="target"
-                            style="width: {canvasWidth}px; height: {canvasHeight}px;"
+                            class="absolute inset-0"
+                            style="width: 100%; height: 100%;"
                         />
-                    </div>
-                {:else if comparisonMode === "slider"}
-                    <img
-                        src={targetImageUrl}
-                        alt="target"
-                        class="absolute inset-0"
-                        style="width: 100%; height: 100%;"
-                    />
+                    {/if}
                     <div
                         class="absolute inset-0 overflow-hidden border-r-2 border-blue-500"
                         style="width: {sliderPosition}%;"

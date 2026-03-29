@@ -129,7 +129,7 @@
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
                         href="/auth/register"
-                        class="bg-foreground text-background px-8 py-1 rounded-lg font-semibold hover:scale-[1.02] transition-all"
+                        class="bg-gradient-to-b from-foreground/50 via-foreground to-foreground text-background px-8 py-1 rounded-lg font-semibold transition-all"
                     >
                         Start Learning Free
                     </a>
