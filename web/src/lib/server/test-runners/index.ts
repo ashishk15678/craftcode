@@ -27,14 +27,18 @@ export abstract class TestRunner {
     this.config = config;
   }
 
-  abstract execute(workingDir: string, userCode: string, stdin?: string): Promise<TestResult>;
+  abstract execute(
+    workingDir: string,
+    userCode: string,
+    stdin?: string,
+  ): Promise<TestResult>;
 }
 
 // Bash Test Runner (existing behavior)
 export class BashTestRunner extends TestRunner {
   async execute(workingDir: string, userCode: string): Promise<TestResult> {
     const startTime = Date.now();
-    
+
     try {
       const { exec } = await import("child_process");
       const { promisify } = await import("util");
@@ -67,7 +71,7 @@ export class BashTestRunner extends TestRunner {
 export class NodeTestRunner extends TestRunner {
   async execute(workingDir: string, userCode: string): Promise<TestResult> {
     const startTime = Date.now();
-    
+
     try {
       const { exec } = await import("child_process");
       const { promisify } = await import("util");
@@ -104,7 +108,7 @@ export class NodeTestRunner extends TestRunner {
 export class PythonTestRunner extends TestRunner {
   async execute(workingDir: string, userCode: string): Promise<TestResult> {
     const startTime = Date.now();
-    
+
     try {
       const { exec } = await import("child_process");
       const { promisify } = await import("util");
@@ -139,7 +143,7 @@ export class PythonTestRunner extends TestRunner {
 export class IOMatchingTestRunner extends TestRunner {
   async execute(workingDir: string, userCode: string): Promise<TestResult> {
     const startTime = Date.now();
-    
+
     try {
       const { spawn } = await import("child_process");
       const fs = await import("fs/promises");
@@ -148,7 +152,7 @@ export class IOMatchingTestRunner extends TestRunner {
       // Read test cases from input/output files
       const testCasesDir = path.join(workingDir, "test_cases");
       const files = await fs.readdir(testCasesDir);
-      const inputFiles = files.filter(f => f.endsWith(".in")).sort();
+      const inputFiles = files.filter((f) => f.endsWith(".in")).sort();
 
       let allPassed = true;
       let output = "";
@@ -157,42 +161,50 @@ export class IOMatchingTestRunner extends TestRunner {
         const baseName = inputFile.replace(".in", "");
         const outputFile = `${baseName}.out`;
 
-        const input = await fs.readFile(path.join(testCasesDir, inputFile), "utf-8");
-        const expectedOutput = await fs.readFile(path.join(testCasesDir, outputFile), "utf-8");
+        const input = await fs.readFile(
+          path.join(testCasesDir, inputFile),
+          "utf-8",
+        );
+        const expectedOutput = await fs.readFile(
+          path.join(testCasesDir, outputFile),
+          "utf-8",
+        );
 
         // Execute user's solution with input using spawn for stdin support
         const command = this.config.script || "./solution";
         const [cmd, ...args] = command.split(" ");
-        
-        const result = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
-          const child = spawn(cmd, args, {
-            cwd: workingDir,
-            timeout: this.config.timeout || 5000,
-          });
 
-          let stdout = "";
-          let stderr = "";
+        const result = await new Promise<{ stdout: string; stderr: string }>(
+          (resolve, reject) => {
+            const child = spawn(cmd, args, {
+              cwd: workingDir,
+              timeout: this.config.timeout || 5000,
+            });
 
-          child.stdout.on("data", (data) => {
-            stdout += data.toString();
-          });
+            let stdout = "";
+            let stderr = "";
 
-          child.stderr.on("data", (data) => {
-            stderr += data.toString();
-          });
+            child.stdout.on("data", (data) => {
+              stdout += data.toString();
+            });
 
-          child.on("close", (code) => {
-            resolve({ stdout, stderr });
-          });
+            child.stderr.on("data", (data) => {
+              stderr += data.toString();
+            });
 
-          child.on("error", (error) => {
-            reject(error);
-          });
+            child.on("close", (code) => {
+              resolve({ stdout, stderr });
+            });
 
-          // Write input to stdin
-          child.stdin.write(input);
-          child.stdin.end();
-        });
+            child.on("error", (error) => {
+              reject(error);
+            });
+
+            // Write input to stdin
+            child.stdin.write(input);
+            child.stdin.end();
+          },
+        );
 
         const passed = result.stdout.trim() === expectedOutput.trim();
         allPassed = allPassed && passed;
@@ -224,7 +236,7 @@ export class IOMatchingTestRunner extends TestRunner {
 export class CSSTestRunner extends TestRunner {
   async execute(workingDir: string, userCode: string): Promise<TestResult> {
     const startTime = Date.now();
-    
+
     // CSS tests are validated client-side by comparing rendered output to target image
     // The server receives the match percentage from the client and validates it
     // This is a placeholder that returns success - actual validation happens in the API endpoint
@@ -238,14 +250,18 @@ export class CSSTestRunner extends TestRunner {
 
 // Judge0 Test Runner (online code execution)
 export class Judge0TestRunner extends TestRunner {
-  async execute(workingDir: string, userCode: string, stdin?: string): Promise<TestResult> {
+  async execute(
+    workingDir: string,
+    userCode: string,
+    stdin?: string,
+  ): Promise<TestResult> {
     const startTime = Date.now();
-    
+
     try {
       // Determine language from config or try to detect from code
       const language = this.config.language || this.detectLanguage(userCode);
       const languageId = LANGUAGE_IDS[language.toLowerCase()];
-      
+
       if (!languageId) {
         return {
           success: false,
@@ -255,7 +271,11 @@ export class Judge0TestRunner extends TestRunner {
         };
       }
 
-      console.log('[Judge0TestRunner] Executing:', { language, languageId, codeLength: userCode.length });
+      console.log("[Judge0TestRunner] Executing:", {
+        language,
+        languageId,
+        codeLength: userCode.length,
+      });
 
       const result = await executeCode({
         sourceCode: userCode,
@@ -267,12 +287,12 @@ export class Judge0TestRunner extends TestRunner {
       // Check if expected output is specified (I/O matching mode)
       let success = result.status?.id === 3; // Accepted
       let output = result.stdout || "";
-      
+
       if (success && this.config.expectedOutput) {
         const expected = this.config.expectedOutput.trim();
         const actual = output.trim();
         success = expected === actual;
-        
+
         if (!success) {
           output = `Expected Output:\n${expected}\n\nActual Output:\n${actual}`;
         }
@@ -311,7 +331,7 @@ export class Judge0TestRunner extends TestRunner {
         memory: result.memory || undefined,
       };
     } catch (error: any) {
-      console.error('[Judge0TestRunner] Error:', error);
+      console.error("[Judge0TestRunner] Error:", error);
       return {
         success: false,
         output: "",
@@ -323,13 +343,27 @@ export class Judge0TestRunner extends TestRunner {
 
   private detectLanguage(code: string): string {
     // Simple heuristics to detect language from code
-    if (code.includes("#include") && (code.includes("int main") || code.includes("void main"))) {
-      return code.includes("iostream") || code.includes("cout") || code.includes("cin") ? "cpp" : "c";
+    if (
+      code.includes("#include") &&
+      (code.includes("int main") || code.includes("void main"))
+    ) {
+      return code.includes("iostream") ||
+        code.includes("cout") ||
+        code.includes("cin")
+        ? "cpp"
+        : "c";
     }
-    if (code.includes("def ") || code.includes("print(") || code.includes("import ")) {
+    if (
+      code.includes("def ") ||
+      code.includes("print(") ||
+      code.includes("import ")
+    ) {
       return "python";
     }
-    if (code.includes("public class") || code.includes("public static void main")) {
+    if (
+      code.includes("public class") ||
+      code.includes("public static void main")
+    ) {
       return "java";
     }
     if (code.includes("fn main") || code.includes("println!")) {
@@ -338,19 +372,31 @@ export class Judge0TestRunner extends TestRunner {
     if (code.includes("package main") || code.includes("func main")) {
       return "go";
     }
-    if (code.includes("console.log") || code.includes("const ") || code.includes("let ") || code.includes("function ")) {
-      return code.includes(": string") || code.includes(": number") || code.includes(": boolean") ? "typescript" : "javascript";
+    if (
+      code.includes("console.log") ||
+      code.includes("const ") ||
+      code.includes("let ") ||
+      code.includes("function ")
+    ) {
+      return code.includes(": string") ||
+        code.includes(": number") ||
+        code.includes(": boolean")
+        ? "typescript"
+        : "javascript";
     }
     if (code.includes("<?php") || code.includes("echo ")) {
       return "php";
     }
-    if (code.includes("puts ") || code.includes("def ") && code.includes("end")) {
+    if (
+      code.includes("puts ") ||
+      (code.includes("def ") && code.includes("end"))
+    ) {
       return "ruby";
     }
     if (code.startsWith("#!/bin/bash") || code.includes("echo ")) {
       return "bash";
     }
-    
+
     // Default to JavaScript
     return "javascript";
   }

@@ -365,3 +365,5 @@ export const STATUS_CODES = {
   13: { name: "Internal Error", color: "red" },
   14: { name: "Exec Format Error", color: "red" },
 } as const;
+
+export const LANGUAGE_IDS = [] as const;
